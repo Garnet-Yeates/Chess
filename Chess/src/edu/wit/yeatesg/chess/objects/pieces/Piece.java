@@ -18,11 +18,26 @@ public abstract class Piece
 	protected Tile tile;
 	protected Color color;
 	
-	protected int moveNum = 1;
+	protected int nextMoveNum = 1;
 	
 	private ImageIcon icon;
 	private ImageIcon outlineIcon;
 	
+	/**
+	 * Sets the class field {@link Piece#board}. This board will be used for all pieces, whether it
+	 * be for removing them, moving their location, or obtaining their location
+	 * @param b
+	 */
+	public static void setBoard(Board b)
+	{
+		Piece.board = b;
+	}
+	
+	/**
+	 * Default constructor which is used for all sub classes of Piece
+	 * @param tile The {@link Tile} that this piece will exist on
+	 * @param color the {@link Color} of this piece
+	 */
 	public Piece(Tile tile, Color color)
 	{
 		this.tile = tile;
@@ -41,60 +56,15 @@ public abstract class Piece
 		}
 	}
 	
-	public abstract PathList getPaths();
-	
-	public ImageIcon getImageIcon()
-	{
-		return icon;
-	}
-	
-	public ImageIcon getOutlineIcon()
-	{
-		return outlineIcon;
-	}
-		
-	public static void setBoard(Board b)
-	{
-		Piece.board = b;
-	}
-	
-	public Tile getTile()
-	{
-		return tile;
-	}
-	
-	public Point getLocation()
-	{
-		return tile.getLocation() == null ? null : tile.getLocation();
-	}
-	
-	public Color getColor()
-	{
-		return new Color(color.getRed(), color.getGreen(), color.getBlue());
-	}	
-	
-	@Override
-	public boolean equals(Object other)
-	{
-		if (super.equals(other))
-		{
-			if (other instanceof Piece)
-			{
-				Piece o = (Piece) other;
-				if (o.color.equals(color) && o.getLocation().equals(getLocation()) && o.tile.equals(tile))
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public void setTile(Tile t)
-	{
-		tile = t;
-	}
-	
+	/**
+	 * Attempts to move this piece to the given Tile. This method makes sure that the movement
+	 * that this piece is attempting is a legal moves. Legal moves are defined as movements to {@link Tile}'s
+	 * that exist in this piece's path list (obtained via {@link Piece#getPaths()}). It also sets certain fields
+	 * during/after movement, depending on what piece is moving (for example, when a Pawn moves, it
+	 * calls {@link Pawn#postMove()} after the movement occurs, which is a special method used only for Pawns)
+	 * @param t the {@link Tile} to attempt to move to
+	 * @return false if the movement failed
+	 */
 	public boolean attemptMove(Tile t)
 	{
 		PathList paths = getPaths();
@@ -125,6 +95,7 @@ public abstract class Piece
 				// ACTUAL MOVEMENT JUST HAPPENED
 				selectedPiece.getTile().setPiece(null);
 				selectedPiece.setTile(t);
+				nextMoveNum++;
 				t.setPiece(selectedPiece);
 
 				if (selectedPiece instanceof Pawn)
@@ -138,17 +109,8 @@ public abstract class Piece
 					}
 					
 					pawn.postMove();
-					
-				/*	if (pawn.isFirstMove() == true)
-					{
-						pawn.setMoved(true);						
-					}*/
-					
 				}
 
-				// CONDITION: MOVED
-				System.out.println("That was the " + moveNum + " th move for that piece");
-				moveNum++;
 				board.getCurrentPlayer().deselect();
 				board.repaint();
 				board.switchTurns();
@@ -156,21 +118,86 @@ public abstract class Piece
 				
 				return true;
 			}
-			else
-			{
-				// CONDITION Can't move there...........................
-			}
 		}
 		
+		// CONDITION can't move there...
 		Chess.playSound("assets/Invalid_Move.wav");
 		return false;
 	}
-
-	public void unbindTile()
+	
+	
+	/**
+	 * This method is implemented in all subclasses of {@link Piece}. These subclasses include
+	 * {@link Pawn}, {@link Rook}, {@link Knight}, {@link Bishop}, {@link King}, and {@link Queen}.
+	 * Every sub class of {@link Piece} has it's own paths that it can move to, and they are all
+	 * dependent on many factors such as if it is their first move, what type of piece they are,
+	 * if they (the king) is in check etc
+	 * @return a {@link PathList} containing all of the {@link Path}'s that this piece can move to
+	 */
+	public abstract PathList getPaths();
+	
+	/**
+	 * Obtains the ImageIcon for this piece. Depending on what piece it is, this ImageIcon will be different.
+	 * This icon will also change depending on the {@link Color} of the Piece
+	 * @return this piece's ImageIcon
+	 */
+	public ImageIcon getImageIcon()
 	{
-		tile = null;
+		return icon;
 	}
 	
+	/**
+	 * Obtains the ImageIcon for the outline of this piece. Depending on what piece it is, the
+	 * outline will look different (a rook outline is in the shape of a rook)
+	 * @return this piece's outline ImageIcon
+	 */
+	public ImageIcon getOutlineIcon()
+	{
+		return outlineIcon;
+	}
+	
+	/**
+	 * Obtains the Tile that this piece exists on
+	 * @return the {@link Tile} object that this piece is bound to
+	 */
+	public Tile getTile()
+	{
+		return tile;
+	}
+	
+	/**
+	 * Changes the Tile that this piece exists on
+	 * @param t The new {@link Tile} for this piece
+	 */
+	public void setTile(Tile t)
+	{
+		tile = t;
+	}
+	
+	/**
+	 * Obtains the {@link Point} location of this piece. This location is the same location of the tile
+	 * that this piece exists on, so it uses that tile to obtain the location
+	 * @return a {@link Point} containing the y,x value of this piece's location
+	 */
+	public Point getLocation()
+	{
+		return tile.getLocation() == null ? null : tile.getLocation();
+	}
+	
+	/**
+	 * Obtains the color of this piece
+	 * @return a {@link Color} object representing this piece's color
+	 */
+	public Color getColor()
+	{
+		return new Color(color.getRed(), color.getGreen(), color.getBlue());
+	}	
+
+	/**
+	 * Determines whether or not this Piece is to the left of another piece
+	 * @param other the other piece
+	 * @return true if this piece is to the left of other
+	 */
 	public boolean isLeftOf(Piece other)
 	{
 		if (getLocation().x < other.getLocation().x)
@@ -180,6 +207,11 @@ public abstract class Piece
 		else return false;
 	}
 	
+	/**
+	 * Determines whether or not this Piece is to the right of another piece
+	 * @param other the other piece
+	 * @return true if this piece is to the right of other
+	 */
 	public boolean isRightOf(Piece other)
 	{
 		if (getLocation().x > other.getLocation().x)
@@ -189,6 +221,10 @@ public abstract class Piece
 		else return false;
 	}
 	
+	/**
+	 * Obtains the piece directly to the left of this piece
+	 * @return null if no such piece exists
+	 */
 	public Piece getPieceToLeft()
 	{
 		Point p = getLocation().clone();
@@ -196,6 +232,10 @@ public abstract class Piece
 		return board.pieceAt(p);
 	}
 	
+	/**
+	 * Obtains the piece directly to the right of this piece
+	 * @return null if no such piece exists
+	 */
 	public Piece getPieceToRight()
 	{
 		Point p = getLocation().clone();
@@ -203,10 +243,36 @@ public abstract class Piece
 		return (board.pieceAt(p) == null) ? null : board.pieceAt(p);
 	}
 	
+	/**
+	 * Determines whether or not this piece has moved. It does this by checking
+	 * if the {@link Piece#nextMoveNum} field is greater than one and returns true
+	 * if that is the case
+	 * @return true if this piece has moved
+	 */
 	public boolean hasMoved()
 	{
-		return moveNum > 1;
+		return nextMoveNum > 1;
 	}
 	
-
+	/**
+	 * Overriding {@link Object#equals(Object)}, this method determines whether
+	 * or not this Piece is considered equivalent to another object. Piece equality
+	 * means that both objects are pieces and have the same location and the same tile
+	 */
+	@Override
+	public boolean equals(Object other)
+	{
+		if (super.equals(other))
+		{
+			if (other instanceof Piece)
+			{
+				Piece o = (Piece) other;
+				if (o.color.equals(color) && o.getLocation().equals(getLocation()) && o.tile.equals(tile))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

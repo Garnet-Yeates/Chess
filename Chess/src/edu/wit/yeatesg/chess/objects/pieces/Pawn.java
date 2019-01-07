@@ -36,17 +36,17 @@ public class Pawn extends Piece
 		tiles.add(front1);
 		tiles.add(front2);
 		
-		if (front1.hasPiece())
+		if (front1.hasPiece()) // If the tile in front has a piece, it can't move to either front1 or front2 because it is blocked via front1
 		{
 			tiles.remove(front1);
 			tiles.remove(front2);
 		}
-		else if (front2 != null && front2.hasPiece())
+		else if (front2 != null && front2.hasPiece()) // If the tile that is 2 tiles in front has a piece, it can't move there
 		{
 			tiles.remove(front2);
 		}
 		
-		if (hasMoved() || front2 == null)
+		if (hasMoved() || front2 == null) // If this Pawn has moved before it can't jump 2 tiles
 		{
 			tiles.remove(front2);
 		}
@@ -57,32 +57,26 @@ public class Pawn extends Piece
 			pathList.add(new Path(tiles));	
 		}
 		
-		Tile diagLeft = board.tileAt(new Point(loc.y + direction, loc.x - 1));
-		Tile diagRight = board.tileAt(new Point(loc.y + direction, loc.x + 1));
+		ArrayList<Tile> diagTiles = new ArrayList<Tile>();
+		diagTiles.add(board.tileAt(new Point(loc.y + direction, loc.x - 1)));
+		diagTiles.add(board.tileAt(new Point(loc.y + direction, loc.x + 1)));
 		
-		if (diagLeft != null && diagLeft.hasPiece() && !diagLeft.getPiece().getColor().equals(color))
+		for (Tile diagTile : diagTiles)
 		{
-			pathList.add(new Path(diagLeft));
-		}
-		else if (diagLeft != null && !diagLeft.hasPiece())
-		{
-			if (passantJumpLocation != null && passantJumpLocation.equals(diagLeft.getLocation()))
+			if (diagTile != null && diagTile.hasPiece() && !diagTile.getPiece().getColor().equals(color))
 			{
-				pathList.add(new Path(diagLeft));
+				pathList.add(new Path(diagTile));
+			}
+			else if (diagTile != null && !diagTile.hasPiece())
+			{
+				if (passantJumpLocation != null && passantJumpLocation.equals(diagTile.getLocation()))
+				{
+					pathList.add(new Path(diagTile)); // If this Pawn has a passant loc at a diagonal tile, add it to the path list
+				}
 			}
 		}
-		if (diagRight != null && diagRight.hasPiece() && !diagRight.getPiece().getColor().equals(color))
-		{
-			pathList.add(new Path(diagRight));
-		}
-		else if (diagRight != null && !diagRight.hasPiece())
-		{
-			if (passantJumpLocation != null && passantJumpLocation.equals(diagRight.getLocation()))
-			{
-				pathList.add(new Path(diagRight));
-			}
-		}
-	
+		
+		// Remove nulls, if any
 		for (Tile t : tiles)
 		{
 			if (t == null)
@@ -106,21 +100,21 @@ public class Pawn extends Piece
 	
 	public void postMove()
 	{ 
-		if (!hasMoved())
+		if (nextMoveNum == 2) // After the first movement is done, the move number is going to be 2, which is the only spot where en passant can occur
 		{
 			Piece[] leftAndRight = new Piece[2];
 			leftAndRight[0] = getPieceToLeft();
 			leftAndRight[1] = getPieceToRight();
-			for (Piece p : leftAndRight)
+			for (Piece adjacentPiece : leftAndRight)
 			{
-				if (p != null)
+				if (adjacentPiece != null)
 				{
-					if (p instanceof Pawn && !((Pawn) p).getColor().equals(color) && ((Pawn) p).jumpedTwiceOnFirstMove && moveNum < 3)
+					if (adjacentPiece instanceof Pawn && !((Pawn) adjacentPiece).getColor().equals(color) && ((Pawn) adjacentPiece).jumpedTwiceOnFirstMove && nextMoveNum < 3)
 					{ 
 						Point passantLocation = this.getLocation().clone();
 						passantLocation.y += direction*-1;
-						((Pawn) p).passant = this;
-						((Pawn) p).passantJumpLocation = passantLocation;
+						((Pawn) adjacentPiece).passant = this;
+						((Pawn) adjacentPiece).passantJumpLocation = passantLocation;
 					}
 				}
 			}
@@ -133,6 +127,7 @@ public class Pawn extends Piece
 				p.passant = null;
 				p.passantJumpLocation = null;
 			}
+			
 		}
 		else if (p2_Pawns.contains(this))
 		{

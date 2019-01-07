@@ -12,6 +12,12 @@ public class Tile
 	private Point location;
 	private Color color;
 	
+	/**
+	 * Constructs a new Tile object
+	 * @param color The color of the tile (should be black or white)
+	 * @param p The location of this tile
+	 * @param b The board that this tile exists on
+	 */
 	public Tile(Color color, Point p, Board b)
 	{
 		this.location = p;
@@ -19,50 +25,68 @@ public class Tile
 		this.board = b;
 	}
 	
+	/**
+	 * Obtains the {@link Board} that ths tile is on
+	 * @return a reference to that board that this tile is on
+	 */
 	public Board getBoard()
 	{
 		return board;
 	}
 	
+	/**
+	 * Obtains the piece that is sitting on this tile, if any
+	 * @return a reference to the piece that is on this tile, or null
+	 * if there is no piece on this tile
+	 */
 	public Piece getPiece()
 	{
 		return piece;
 	}
 	
+	/**
+	 * Determines whether or not this Tile has a piece
+	 * @return true if this tile has a piece, false otherwise
+	 */
 	public boolean hasPiece()
 	{
 		return piece != null;
 	}
 	
+	/**
+	 * Obtains the location of this piece
+ 	 * @return the (y,x) {@link Point} representation of where
+ 	 * this Tile is on its respective board
+	 */
 	public Point getLocation()
 	{
 		return location;
 	}
 	
+	/**
+	 * Obtains the Color of this tile. Dark tiles will always return black, even if
+	 * they are painted green on the board
+	 * @return a {@link Color} object representing the RGB values of this tile
+	 */
 	public Color getColor()
 	{
 		return new Color(color.getRed(), color.getGreen(), color.getBlue());
 	}	
 	
+	/**
+	 * Sets this Tile's {@link Piece} to the one given in the parameter
+	 * @param p The new {@link Piece} that will sit on this Tile
+	 */
 	public void setPiece(Piece p)
 	{
 		piece = p;
 	}
 	
-	@Override
-	public boolean equals(Object other)
-	{
-		if (other instanceof Tile)
-		{
-			Tile o = (Tile) other;
-			if (o.location.equals(location))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	
+	/**
+	 * Obtains all 8 (or less, depending on whether it's an edge or corner tile) tiles
+	 * that are adjacent to this tile
+	 * @return {@link ArrayList} of Tiles that are adjacent to this tile on the same board
+	 */
 	public ArrayList<Tile> getAdjacentTiles()
 	{
 		ArrayList<Tile> rawList = new ArrayList<>();
@@ -85,4 +109,24 @@ public class Tile
 		}	
 		return refinedList;
 	}
+	
+	/**
+	 * Overriding {@link Object#equals(Object)}, this method determines whether
+	 * or not this Tile is considered equivalent to another object. Tile equality
+	 * means that both objects are tiles and have the same location
+	 */
+	@Override
+	public boolean equals(Object other)
+	{
+		if (other instanceof Tile)
+		{
+			Tile o = (Tile) other;
+			if (o.location.equals(location))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }

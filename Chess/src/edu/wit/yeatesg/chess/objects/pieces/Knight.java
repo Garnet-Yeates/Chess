@@ -18,7 +18,6 @@ public class Knight extends Piece
 	@Override
 	public PathList getPaths()
 	{
-		// TODO Auto-generated method stub
 		ArrayList<Path> pathList = new ArrayList<>();
 		Point loc = getLocation();
 		Tile t;

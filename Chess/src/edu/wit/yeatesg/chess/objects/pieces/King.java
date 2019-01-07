@@ -35,6 +35,7 @@ public class King extends Piece
 			{
 				if (!inCheck())
 				{
+					// The two tiles that are between the Rook and the King cannot be under attack by the enemy team, so they are checked
 					ArrayList<Tile> tilesToCheck = new ArrayList<>();
 					if (rook.isLeftOf(this))
 					{
@@ -48,7 +49,7 @@ public class King extends Piece
 					}
 					for (Tile t : tilesToCheck)
 					{
-						if (checkLocation(t.getLocation(), getColor()))
+						if (isUnderAttack(t.getLocation(), getColor()))
 						{
 							System.out.println("Can't castle because one of the between tiles will put the king in check");
 							return false;
@@ -113,7 +114,7 @@ public class King extends Piece
 		}
 	}
 	
-	public boolean checkLocation(Point point, Color color)
+	public boolean isUnderAttack(Point point, Color color)
 	{
 		Color enemyColor = color.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
 		ArrayList<Piece> pieces = board.getLivingPieces();
@@ -136,7 +137,6 @@ public class King extends Piece
 
 	public boolean inCheck()
 	{
-		return checkLocation(getLocation(), getColor());
+		return isUnderAttack(getLocation(), getColor());
 	}
-
 }
