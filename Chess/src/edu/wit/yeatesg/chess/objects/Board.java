@@ -387,7 +387,7 @@ public class Board extends JPanel
 				currentPlayer.deselect();
 				Chess.playSound("assets/Pickup_Place.wav");
 			}
-			else if (!clickedTile.hasPiece())
+			else if (!clickedTile.hasPiece() || !clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
 			{
 				currentPlayer.getSelectedPiece().attemptMove(clickedTile); // In this condition, they clicked an empty tile so they must be trying to move
 			}

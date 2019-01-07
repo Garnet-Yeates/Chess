@@ -114,10 +114,11 @@ public abstract class Piece
 				
 				if (selectedPiece instanceof Pawn)
 				{
+					((Pawn) selectedPiece).setLastLocation(selectedPiece.getLocation());
+
 					if (t.getLocation().getVerticalDistance(selectedPiece.getLocation()) > 1)
 					{
-						((Pawn) selectedPiece).jumpedTwiceOnFirstMove = true;
-						((Pawn) selectedPiece).setLastLocation(selectedPiece.getLocation());
+						((Pawn) selectedPiece).setJumpedTwiceOnFirstMove(true);
 					}
 				}
 				
@@ -146,6 +147,7 @@ public abstract class Piece
 				}
 
 				// CONDITION: MOVED
+				System.out.println("That was the " + moveNum + " th move for that piece");
 				moveNum++;
 				board.getCurrentPlayer().deselect();
 				board.repaint();

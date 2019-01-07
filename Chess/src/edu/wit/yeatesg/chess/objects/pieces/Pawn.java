@@ -11,8 +11,7 @@ import edu.wit.yeatesg.pathing.Point;
 public class Pawn extends Piece
 {
 	private int direction;
-	private boolean firstMove;
-	boolean jumpedTwiceOnFirstMove;
+	private boolean jumpedTwiceOnFirstMove;
 	
 	private Piece passant;
 	private Point passantJumpLocation;
@@ -24,7 +23,6 @@ public class Pawn extends Piece
 	{
 		super(tile, color);
 		direction = color.equals(Color.WHITE) ? -1 : 1;
-		firstMove = true;
 	}
 
 	@Override
@@ -96,6 +94,15 @@ public class Pawn extends Piece
 		return new PathList(pathList);
 	}
 	
+	public boolean jumpedTwiceOnFirstMove()
+	{
+		return jumpedTwiceOnFirstMove;
+	}
+	
+	public void setJumpedTwiceOnFirstMove(boolean twice)
+	{
+		jumpedTwiceOnFirstMove = twice;
+	}
 	
 	public void postMove()
 	{ 
@@ -108,7 +115,7 @@ public class Pawn extends Piece
 			{
 				if (p != null)
 				{
-					if (p instanceof Pawn && !((Pawn) p).getColor().equals(color))
+					if (p instanceof Pawn && !((Pawn) p).getColor().equals(color) && ((Pawn) p).jumpedTwiceOnFirstMove && moveNum < 3)
 					{ 
 						Point passantLocation = this.getLocation().clone();
 						passantLocation.y += direction*-1;
