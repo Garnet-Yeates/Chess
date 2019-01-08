@@ -113,11 +113,17 @@ public class Player
 				}
 			}
 			
-			for (Piece enemyPiece : (ArrayList<Piece>) piecesThatCanKillKing.clone())
+			/* This block covers the possibility of the King's allies attacking pieces that are threatening the king.
+			 * However, this can only happen if it is this King's turn
+			 */
+			if (board.getCurrentPlayer().getColor().equals(king.getColor()))
 			{
-				if (enemyPiece.isUnderAttack())
+				for (Piece enemyPiece : (ArrayList<Piece>) piecesThatCanKillKing.clone())
 				{
-					piecesThatCanKillKing.remove(enemyPiece);
+					if (enemyPiece.isUnderAttack())
+					{
+						piecesThatCanKillKing.remove(enemyPiece);
+					}
 				}
 			}
 			
@@ -126,9 +132,11 @@ public class Player
 				checkMate = true;
 			}
 			
-			// Possibility of King moving himself out of check handeled below
-			
-			if (checkMate == true)
+			/* Possibility of King moving himself out of check handeled below (again, it has to be the king's team's turn
+			 * in order for this to be a possibility. Also, the possibility of an ally blocking an enemy's path to the king
+			 * is handeled below as well
+			 */
+			if (checkMate == true && board.getCurrentPlayer().getColor().equals(king.getColor()))
 			{	
 				ArrayList<Path> vulnerableKingPaths = new ArrayList<>();			
 				
@@ -160,11 +168,16 @@ public class Player
 					}
 				}
 				
-				if (!vulnerableKingPaths.isEmpty()) 
+				if (vulnerableKingPaths.isEmpty()) 
 				{
-					String team = color.equals(Color.WHITE) ? "WHITE" : "BLACK";
-					System.out.println("CHECKMATE FOR " + team + " KING");
+					checkMate = false;
 				}
+			}
+			
+			if (checkMate)
+			{
+				String team = color.equals(Color.WHITE) ? "WHITE" : "BLACK";
+				System.out.println("CHECKMATE FOR " + team + " KING");
 			}
 		}
 	}

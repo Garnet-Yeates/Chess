@@ -333,8 +333,6 @@ public class Board extends JPanel
 	 */
 	public void switchTurns()
 	{
-		p1.checkCheckmate();
-		p2.checkCheckmate();
 		if (p1.equals(currentPlayer))
 		{
 			currentPlayer = p2;
@@ -343,6 +341,8 @@ public class Board extends JPanel
 		{
 			currentPlayer = p1;
 		}
+		p1.checkCheckmate();
+		p2.checkCheckmate();
 	}
 	
 	boolean frozen = false;
@@ -416,7 +416,6 @@ public class Board extends JPanel
 					}
 					else // In this condition, the player tried to select one of their opponent's pieces
 					{
-						System.out.println("OPP");
 						Chess.playSound("assets/Invalid_Click.wav");
 					}
 				}
@@ -427,9 +426,9 @@ public class Board extends JPanel
 				}
 				else if (!clickedTile.hasPiece() || !clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
 				{
-					currentPlayer.getSelectedPiece().attemptMove(clickedTile); // In this condition, they clicked an empty tile so they must be trying to move
+					currentPlayer.getSelectedPiece().attemptMove(clickedTile); // In this condition, they clicked an empty tile or enemy so they must be trying to move
 				}
-				else // The user has a selected piece but didn't de-select their piece
+				else // The user has a selected piece but didn't de-select their piece or try a normal move
 				{
 					if (clickedTile.hasPiece() && clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
 					{

@@ -84,7 +84,6 @@ public class King extends Piece
 						
 						board.tileAt(loc).setPiece(rook);
 						rook.setTile(board.tileAt(loc));
-						System.out.println("rooks tile set to " + loc);
 					}
 					
 					originalKingTile.setPiece(null);
