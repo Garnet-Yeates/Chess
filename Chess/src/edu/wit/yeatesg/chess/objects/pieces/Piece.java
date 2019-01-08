@@ -58,9 +58,6 @@ public abstract class Piece
 		{
 			icon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Black.png");
 		}
-
-
-
 	}
 
 	/**

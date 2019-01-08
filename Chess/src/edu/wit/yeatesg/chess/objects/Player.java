@@ -163,7 +163,7 @@ public class Player
 				if (!vulnerableKingPaths.isEmpty()) 
 				{
 					String team = color.equals(Color.WHITE) ? "WHITE" : "BLACK";
-					System.out.println("FUCKING CHECKMATE FOR THIS DUMB CUNT ON TEAM " + team);
+					System.out.println("CHECKMATE FOR " + team + " KING");
 				}
 			}
 		}
