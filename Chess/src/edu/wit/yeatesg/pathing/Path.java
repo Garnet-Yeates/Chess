@@ -7,10 +7,11 @@ import edu.wit.yeatesg.chess.objects.pieces.Piece;
 
 public class Path
 {
+	private static Board board;
+	
 	private ArrayList<Tile> tiles = new ArrayList<>();
 	private Piece killed;
-	
-	private static Board board;
+	public Piece piece;
 	
 	public static void setBoard(Board b)
 	{
@@ -21,17 +22,28 @@ public class Path
 	 * For Knights
 	 * @param t
 	 */
-	public Path(Tile t)
+	public Path(Tile t, Piece creator)
 	{
 		tiles.add(t);
+		if (t.hasPiece() && !t.getPiece().getColor().equals(creator.getColor()))
+		{
+			killed = t.getPiece();
+		}
 	}
 	
-	public Path(ArrayList<Tile> tiles)
+	public Path(ArrayList<Tile> tiles, Piece creator)
 	{
 		this.tiles.addAll(tiles);
+		for (Tile t : tiles)
+		{
+			if (t.hasPiece() && !t.getPiece().getColor().equals(creator.getColor()))
+			{
+				killed = t.getPiece();
+			}
+		}
 	}
 	
-	public Path(Direction direction, Point point)
+	public Path(Direction direction, Point point, Piece creator)
 	{	
 		Piece piece = board.pieceAt(point);
 		Point p = point.clone();
@@ -85,6 +97,18 @@ public class Path
 		while (true);
 	}
 	
+	public boolean intercepts(Path other)
+	{
+		for (Tile t : other.getTiles())
+		{
+			if (this.contains(t))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public ArrayList<Tile> getTiles()
 	{
 		return tiles;
@@ -108,5 +132,10 @@ public class Path
 	public boolean contains(Tile t)
 	{
 		return tiles.contains(t);
+	}
+	
+	public Piece getCreator()
+	{
+		return piece;
 	}
 }

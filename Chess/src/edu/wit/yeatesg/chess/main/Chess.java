@@ -25,7 +25,6 @@ public class Chess
 				//gameFrame.addKeyListener(gamePanel);
 				gamePanel.setPreferredSize(gamePanel.getPreferredSize());
 				gameFrame.getContentPane().add(gamePanel);
-
 				gameFrame.pack();
 				gameFrame.getContentPane().setBackground(Color.LIGHT_GRAY);
 				gameFrame.setResizable(false);

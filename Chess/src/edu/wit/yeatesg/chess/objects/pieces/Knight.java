@@ -24,35 +24,36 @@ public class Knight extends Piece
 		
 		if ((t = board.tileAt(new Point(loc.y - 2, loc.x + 1))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y - 2, loc.x - 1))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y + 2, loc.x + 1))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y + 2, loc.x - 1))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y - 1, loc.x + 2))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y + 1, loc.x + 2))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y - 1, loc.x - 2))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		if ((t = board.tileAt(new Point(loc.y + 1, loc.x - 2))) != null)
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
+		
 		}
 		
 		for (Path p : pathList)

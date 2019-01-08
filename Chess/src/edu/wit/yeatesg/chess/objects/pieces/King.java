@@ -22,7 +22,7 @@ public class King extends Piece
 		ArrayList<Path> pathList = new ArrayList<Path>();
 		for (Tile t : getTile().getAdjacentTiles())
 		{
-			pathList.add(new Path(t));
+			pathList.add(new Path(t, this));
 		}
 		return new PathList(pathList);
 	}
@@ -49,7 +49,7 @@ public class King extends Piece
 					}
 					for (Tile t : tilesToCheck)
 					{
-						if (isUnderAttack(t.getLocation(), getColor()))
+						if (board.isUnderAttack(t.getLocation(), getColor()))
 						{
 							System.out.println("Can't castle because one of the between tiles will put the king in check");
 							return false;
@@ -113,30 +113,9 @@ public class King extends Piece
 			return false;
 		}
 	}
-	
-	public boolean isUnderAttack(Point point, Color color)
-	{
-		Color enemyColor = color.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
-		ArrayList<Piece> pieces = board.getLivingPieces();
-		for (Piece p : pieces)
-		{
-			if (p.getColor().equals(enemyColor))
-			{
-				PathList paths = p.getPaths();
-				for (Path path : paths)
-				{
-					if (path.contains(board.tileAt(point)))
-					{
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
 
 	public boolean inCheck()
 	{
-		return isUnderAttack(getLocation(), getColor());
+		return isUnderAttack();
 	}
 }

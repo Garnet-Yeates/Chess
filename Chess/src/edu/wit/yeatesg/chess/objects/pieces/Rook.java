@@ -15,7 +15,7 @@ public class Rook extends Piece
 	@Override
 	public PathList getPaths()
 	{
-		return new PathList(Direction.getStraights(), getLocation());
+		return new PathList(Direction.getStraights(), getLocation(), this);
 	}
 
 }

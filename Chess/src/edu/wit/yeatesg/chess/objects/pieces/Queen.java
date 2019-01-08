@@ -16,7 +16,7 @@ public class Queen extends Piece
 	@Override
 	public PathList getPaths()
 	{
-		return new PathList(Direction.getDiagonalsAndStraights(), getLocation());
+		return new PathList(Direction.getDiagonalsAndStraights(), getLocation(), this);
 	}
 
 }

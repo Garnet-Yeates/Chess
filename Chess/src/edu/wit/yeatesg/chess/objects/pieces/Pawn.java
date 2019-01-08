@@ -3,6 +3,7 @@ package edu.wit.yeatesg.chess.objects.pieces;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import edu.wit.yeatesg.chess.objects.PromotionWindow;
 import edu.wit.yeatesg.chess.objects.Tile;
 import edu.wit.yeatesg.pathing.Path;
 import edu.wit.yeatesg.pathing.PathList;
@@ -25,6 +26,7 @@ public class Pawn extends Piece
 		direction = color.equals(Color.WHITE) ? -1 : 1;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public PathList getPaths()
 	{
@@ -36,7 +38,7 @@ public class Pawn extends Piece
 		tiles.add(front1);
 		tiles.add(front2);
 		
-		if (front1.hasPiece()) // If the tile in front has a piece, it can't move to either front1 or front2 because it is blocked via front1
+		if (front1 != null && front1.hasPiece()) // If the tile in front has a piece, it can't move to either front1 or front2 because it is blocked via front1
 		{
 			tiles.remove(front1);
 			tiles.remove(front2);
@@ -52,9 +54,18 @@ public class Pawn extends Piece
 		}
 		
 		ArrayList<Path> pathList = new ArrayList<Path>();
+		
+		for (Tile t : (ArrayList<Tile>) tiles.clone())
+		{
+			if (t == null)
+			{
+				tiles.remove(t);
+			}
+		}
+		
 		if (!tiles.isEmpty())
 		{
-			pathList.add(new Path(tiles));	
+			pathList.add(new Path(tiles, this));	
 		}
 		
 		ArrayList<Tile> diagTiles = new ArrayList<Tile>();
@@ -65,13 +76,13 @@ public class Pawn extends Piece
 		{
 			if (diagTile != null && diagTile.hasPiece() && !diagTile.getPiece().getColor().equals(color))
 			{
-				pathList.add(new Path(diagTile));
+				pathList.add(new Path(diagTile, this));
 			}
 			else if (diagTile != null && !diagTile.hasPiece())
 			{
 				if (passantJumpLocation != null && passantJumpLocation.equals(diagTile.getLocation()))
 				{
-					pathList.add(new Path(diagTile)); // If this Pawn has a passant loc at a diagonal tile, add it to the path list
+					pathList.add(new Path(diagTile, this)); // If this Pawn has a passant loc at a diagonal tile, add it to the path list
 				}
 			}
 		}
@@ -100,6 +111,11 @@ public class Pawn extends Piece
 	
 	public void postMove()
 	{ 
+		if ((direction == 1 && getLocation().y == 7) || (direction == -1 && getLocation().y == 0))
+		{
+			new PromotionWindow(this, board);
+		}
+		
 		if (nextMoveNum == 2) // After the first movement is done, the move number is going to be 2, which is the only spot where en passant can occur
 		{
 			Piece[] leftAndRight = new Piece[2];

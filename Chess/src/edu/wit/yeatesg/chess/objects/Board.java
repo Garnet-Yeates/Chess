@@ -27,6 +27,7 @@ import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.objects.pieces.Queen;
 import edu.wit.yeatesg.chess.objects.pieces.Rook;
 import edu.wit.yeatesg.pathing.Path;
+import edu.wit.yeatesg.pathing.PathList;
 import edu.wit.yeatesg.pathing.Point;
 
 public class Board extends JPanel
@@ -41,8 +42,8 @@ public class Board extends JPanel
 
 	private Tile[][] board = new Tile[numTiles][numTiles];
 
-	private Player p1 = new Player(Color.WHITE);
-	private Player p2 = new Player(Color.BLACK);
+	private Player p1 = new Player(Color.WHITE, this);
+	private Player p2 = new Player(Color.BLACK, this);
 
 	private Player currentPlayer = p1;
 
@@ -64,7 +65,7 @@ public class Board extends JPanel
 
 		BoardMouseListener mouseListener = new BoardMouseListener();
 		addMouseMotionListener(mouseListener);
-		addMouseListener(mouseListener);
+		addMouseListener(mouseListener);		
 	}
 	
 	/**
@@ -94,9 +95,9 @@ public class Board extends JPanel
 		
 		new Queen(board[7][3], Color.WHITE);
 		
-		new King(board[0][4], Color.BLACK);
+		p2.setKing(new King(board[0][4], Color.BLACK));
 		
-		new King(board[7][4], Color.WHITE);
+		p1.setKing(new King(board[7][4], Color.WHITE));
 
 		for (int x = 0; x < numTiles; x++)
 		{
@@ -294,6 +295,27 @@ public class Board extends JPanel
 		}
 		return list;
 	}
+	
+	public boolean isUnderAttack(Point point, Color color)
+	{
+		Color enemyColor = color.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
+		ArrayList<Piece> pieces = getLivingPieces();
+		for (Piece p : pieces)
+		{
+			if (p.getColor().equals(enemyColor))
+			{
+				PathList paths = p.getPaths();
+				for (Path path : paths)
+				{
+					if (path.contains(tileAt(point)))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Who's turn is it? Obtains the player who is currently allowed to select
@@ -311,6 +333,8 @@ public class Board extends JPanel
 	 */
 	public void switchTurns()
 	{
+		p1.checkCheckmate();
+		p2.checkCheckmate();
 		if (p1.equals(currentPlayer))
 		{
 			currentPlayer = p2;
@@ -319,6 +343,18 @@ public class Board extends JPanel
 		{
 			currentPlayer = p1;
 		}
+	}
+	
+	boolean frozen = false;
+	
+	public void freeze()
+	{
+		frozen = true;
+	}
+	
+	public void unFreeze()
+	{
+		frozen = false;
 	}
 	
 	private int preferredSize = numTiles * tileSize - 10;
@@ -366,45 +402,52 @@ public class Board extends JPanel
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
-			int x = e.getX() / (tileSize);
-			int y = e.getY() / (tileSize);
-			Tile clickedTile = tileAt(new Point(y, x));
-			if (!currentPlayer.hasSelectedPiece()) // If the current player doesn't have a selected piece, they must be trying to select
+			if (!frozen)
 			{
-				if ((clickedTile.hasPiece() && clickedTile.getPiece().getColor().equals(currentPlayer.getColor())))
-				{ 
-					currentPlayer.selectPiece(clickedTile.getPiece());
+				int x = e.getX() / (tileSize);
+				int y = e.getY() / (tileSize);
+				Tile clickedTile = tileAt(new Point(y, x));
+				if (!currentPlayer.hasSelectedPiece()) // If the current player doesn't have a selected piece, they must be trying to select
+				{
+					if ((clickedTile.hasPiece() && clickedTile.getPiece().getColor().equals(currentPlayer.getColor())))
+					{ 
+						currentPlayer.selectPiece(clickedTile.getPiece());
+						Chess.playSound("assets/Pickup_Place.wav");
+					}
+					else // In this condition, the player tried to select one of their opponent's pieces
+					{
+						System.out.println("OPP");
+						Chess.playSound("assets/Invalid_Click.wav");
+					}
+				}
+				else if (currentPlayer.getSelectedPiece().getTile().equals(clickedTile))
+				{ // If the player clicks on the tile that their selected piece originated from, they must be de-selecting
+					currentPlayer.deselect();
 					Chess.playSound("assets/Pickup_Place.wav");
 				}
-				else // In this condition, the player tried to select one of their opponent's pieces
+				else if (!clickedTile.hasPiece() || !clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
 				{
-					System.out.println("OPP");
-					Chess.playSound("assets/Invalid_Click.wav");
+					currentPlayer.getSelectedPiece().attemptMove(clickedTile); // In this condition, they clicked an empty tile so they must be trying to move
 				}
-			}
-			else if (currentPlayer.getSelectedPiece().getTile().equals(clickedTile))
-			{ // If the player clicks on the tile that their selected piece originated from, they must be de-selecting
-				currentPlayer.deselect();
-				Chess.playSound("assets/Pickup_Place.wav");
-			}
-			else if (!clickedTile.hasPiece() || !clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
-			{
-				currentPlayer.getSelectedPiece().attemptMove(clickedTile); // In this condition, they clicked an empty tile so they must be trying to move
-			}
-			else // The user has a selected piece but didn't de-select their piece
-			{
-				if (clickedTile.hasPiece() && clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
+				else // The user has a selected piece but didn't de-select their piece
 				{
-					Piece selected = currentPlayer.getSelectedPiece();
-					if (selected instanceof King && clickedTile.getPiece() instanceof Rook)
+					if (clickedTile.hasPiece() && clickedTile.getPiece().getColor().equals(currentPlayer.getSelectedPiece().getColor()))
 					{
-						((King) selected).castle((Rook) clickedTile.getPiece());
-					}
-					else
-					{
-						Chess.playSound("assets/Invalid_Move.wav");
+						Piece selected = currentPlayer.getSelectedPiece();
+						if (selected instanceof King && clickedTile.getPiece() instanceof Rook)
+						{
+							((King) selected).castle((Rook) clickedTile.getPiece());
+						}
+						else
+						{
+							Chess.playSound("assets/Invalid_Move.wav");
+						}
 					}
 				}
+			}
+			else
+			{
+				Chess.playSound("assets/Invalid_Move.wav");
 			}
 		}
 		
@@ -422,5 +465,11 @@ public class Board extends JPanel
 		public void mousePressed(MouseEvent arg0) {}
 		public void mouseReleased(MouseEvent arg0) {}
 		public void mouseDragged(MouseEvent arg0) {}
+	}
+
+	public void finishGame(Color winner)
+	{
+		freeze();
+		System.out.println((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
 	}
 }

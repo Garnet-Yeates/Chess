@@ -1,6 +1,7 @@
 package edu.wit.yeatesg.chess.objects.pieces;
 
 import java.awt.Color;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 
@@ -14,15 +15,15 @@ import edu.wit.yeatesg.pathing.Point;
 public abstract class Piece
 {
 	public static Board board;
-	
+
 	protected Tile tile;
 	protected Color color;
-	
+
 	protected int nextMoveNum = 1;
-	
-	private ImageIcon icon;
+
+	protected ImageIcon icon;
 	private ImageIcon outlineIcon;
-	
+
 	/**
 	 * Sets the class field {@link Piece#board}. This board will be used for all pieces, whether it
 	 * be for removing them, moving their location, or obtaining their location
@@ -32,7 +33,7 @@ public abstract class Piece
 	{
 		Piece.board = b;
 	}
-	
+
 	/**
 	 * Default constructor which is used for all sub classes of Piece
 	 * @param tile The {@link Tile} that this piece will exist on
@@ -40,12 +41,15 @@ public abstract class Piece
 	 */
 	public Piece(Tile tile, Color color)
 	{
-		this.tile = tile;
-		this.color = color;
-		tile.setPiece(this);
-		
+		if (tile != null)
+		{
+			this.tile = tile;
+			this.color = color;
+			tile.setPiece(this);	
+		}
+
 		outlineIcon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Outline.png");
-		
+
 		if (color.equals(Color.WHITE))
 		{
 			icon = new ImageIcon("assets/" + getClass().getSimpleName() + "_White.png");
@@ -54,8 +58,11 @@ public abstract class Piece
 		{
 			icon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Black.png");
 		}
+
+
+
 	}
-	
+
 	/**
 	 * Attempts to move this piece to the given Tile. This method makes sure that the movement
 	 * that this piece is attempting is a legal moves. Legal moves are defined as movements to {@link Tile}'s
@@ -65,7 +72,7 @@ public abstract class Piece
 	 * @param t the {@link Tile} to attempt to move to
 	 * @return false if the movement failed
 	 */
-	public boolean attemptMove(Tile t)
+	public void attemptMove(Tile t)
 	{
 		PathList paths = getPaths();
 		for (Path p : paths)
@@ -77,11 +84,25 @@ public abstract class Piece
 					if (t.equals(p.getKilledPiece().getTile()))
 					{
 						p.getKilledPiece().setTile(null);
+						
+						if (p.getKilledPiece() instanceof King)
+						{
+							board.finishGame(color);
+							board.getCurrentPlayer().getSelectedPiece().getTile().setPiece(null);
+							t.setPiece(board.getCurrentPlayer().getSelectedPiece());
+							board.getCurrentPlayer().getSelectedPiece().setTile(t);
+							board.getCurrentPlayer().deselect();
+							board.repaint();
+							nextMoveNum++;
+							Chess.playSound("assets/Victory.wav");
+							return;
+						}
+						
 					}
 				}
-				
+
 				Piece selectedPiece = board.getCurrentPlayer().getSelectedPiece();
-				
+
 				if (selectedPiece instanceof Pawn)
 				{
 					((Pawn) selectedPiece).setLastLocation(selectedPiece.getLocation());
@@ -91,7 +112,7 @@ public abstract class Piece
 						((Pawn) selectedPiece).setJumpedTwiceOnFirstMove(true);
 					}
 				}
-				
+
 				// ACTUAL MOVEMENT JUST HAPPENED
 				selectedPiece.getTile().setPiece(null);
 				selectedPiece.setTile(t);
@@ -107,7 +128,7 @@ public abstract class Piece
 						pawn.getPassant().getTile().setPiece(null);
 						pawn.getPassant().setTile(null);
 					}
-					
+
 					pawn.postMove();
 				}
 
@@ -115,17 +136,15 @@ public abstract class Piece
 				board.repaint();
 				board.switchTurns();
 				Chess.playSound("assets/Pickup_Place.wav");
-				
-				return true;
+				return;
 			}
 		}
-		
+
 		// CONDITION can't move there...
 		Chess.playSound("assets/Invalid_Move.wav");
-		return false;
 	}
-	
-	
+
+
 	/**
 	 * This method is implemented in all subclasses of {@link Piece}. These subclasses include
 	 * {@link Pawn}, {@link Rook}, {@link Knight}, {@link Bishop}, {@link King}, and {@link Queen}.
@@ -135,7 +154,7 @@ public abstract class Piece
 	 * @return a {@link PathList} containing all of the {@link Path}'s that this piece can move to
 	 */
 	public abstract PathList getPaths();
-	
+
 	/**
 	 * Obtains the ImageIcon for this piece. Depending on what piece it is, this ImageIcon will be different.
 	 * This icon will also change depending on the {@link Color} of the Piece
@@ -145,7 +164,7 @@ public abstract class Piece
 	{
 		return icon;
 	}
-	
+
 	/**
 	 * Obtains the ImageIcon for the outline of this piece. Depending on what piece it is, the
 	 * outline will look different (a rook outline is in the shape of a rook)
@@ -155,7 +174,7 @@ public abstract class Piece
 	{
 		return outlineIcon;
 	}
-	
+
 	/**
 	 * Obtains the Tile that this piece exists on
 	 * @return the {@link Tile} object that this piece is bound to
@@ -164,7 +183,7 @@ public abstract class Piece
 	{
 		return tile;
 	}
-	
+
 	/**
 	 * Changes the Tile that this piece exists on
 	 * @param t The new {@link Tile} for this piece
@@ -173,7 +192,7 @@ public abstract class Piece
 	{
 		tile = t;
 	}
-	
+
 	/**
 	 * Obtains the {@link Point} location of this piece. This location is the same location of the tile
 	 * that this piece exists on, so it uses that tile to obtain the location
@@ -183,7 +202,7 @@ public abstract class Piece
 	{
 		return tile.getLocation() == null ? null : tile.getLocation();
 	}
-	
+
 	/**
 	 * Obtains the color of this piece
 	 * @return a {@link Color} object representing this piece's color
@@ -206,7 +225,7 @@ public abstract class Piece
 		}
 		else return false;
 	}
-	
+
 	/**
 	 * Determines whether or not this Piece is to the right of another piece
 	 * @param other the other piece
@@ -220,7 +239,7 @@ public abstract class Piece
 		}
 		else return false;
 	}
-	
+
 	/**
 	 * Obtains the piece directly to the left of this piece
 	 * @return null if no such piece exists
@@ -231,7 +250,7 @@ public abstract class Piece
 		p.x -= 1;
 		return board.pieceAt(p);
 	}
-	
+
 	/**
 	 * Obtains the piece directly to the right of this piece
 	 * @return null if no such piece exists
@@ -242,7 +261,7 @@ public abstract class Piece
 		p.x += 1;
 		return (board.pieceAt(p) == null) ? null : board.pieceAt(p);
 	}
-	
+
 	/**
 	 * Determines whether or not this piece has moved. It does this by checking
 	 * if the {@link Piece#nextMoveNum} field is greater than one and returns true
@@ -254,6 +273,62 @@ public abstract class Piece
 		return nextMoveNum > 1;
 	}
 	
+	/**
+	 * Checks to see if this piece is under attack (able to be attacked by enemies)
+	 * @return true if this piece is under attack
+	 */
+	public boolean isUnderAttack()
+	{
+		return board.isUnderAttack(getLocation(), getColor());
+	}
+	
+	/**
+	 * Obtains a list of all of the pieces on the board that are on the same team
+	 * as this piece
+	 * @return an {@link ArrayList} of the ally pieces
+	 */
+	public ArrayList<Piece> getAllyPieces()
+	{
+		ArrayList<Piece> list = new ArrayList<>();
+		for (int y = 0; y < 8; y++)
+		{
+			for (int x = 0; x < 8; x++)
+			{
+				Point loc = new Point(y, x);
+				Piece p;
+				if ((p = board.pieceAt(loc)) != null && p.getColor().equals(getColor()))
+				{
+					list.add(p);
+				}
+			}
+		}
+		list.remove(this);
+		return list;
+	}
+	
+	/**
+	 * Obtains a list of all of the pieces on the board that aren't on the same team
+	 * as this piece
+	 * @return an {@link ArrayList} of the enemy pieces
+	 */
+	public ArrayList<Piece> getEnemyPieces()
+	{
+		ArrayList<Piece> list = new ArrayList<>();
+		for (int y = 0; y < 8; y++)
+		{
+			for (int x = 0; x < 8; x++)
+			{
+				Point loc = new Point(y, x);
+				Piece p;
+				if ((p = board.pieceAt(loc)) != null && !p.getColor().equals(getColor()))
+				{
+					list.add(p);
+				}
+			}
+		}
+		return list;
+	}
+
 	/**
 	 * Overriding {@link Object#equals(Object)}, this method determines whether
 	 * or not this Piece is considered equivalent to another object. Piece equality

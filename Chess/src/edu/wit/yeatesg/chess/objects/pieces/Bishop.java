@@ -16,7 +16,7 @@ public class Bishop extends Piece
 	@Override
 	public PathList getPaths()
 	{
-		return new PathList(Direction.getDiagonals(), getLocation());
+		return new PathList(Direction.getDiagonals(), getLocation(), this);
 	}
 
 }
