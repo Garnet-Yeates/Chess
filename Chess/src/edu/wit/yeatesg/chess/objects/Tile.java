@@ -3,7 +3,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Tile
 {

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 import edu.wit.yeatesg.chess.objects.pieces.King;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
-import edu.wit.yeatesg.pathing.Path;
-import edu.wit.yeatesg.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Path;
+import edu.wit.yeatesg.chess.pathing.PathList;
 
 public class Player
 {
@@ -116,7 +116,7 @@ public class Player
 			/* This block covers the possibility of the King's allies attacking pieces that are threatening the king.
 			 * However, this can only happen if it is this King's turn
 			 */
-			if (board.getCurrentPlayer().getColor().equals(king.getColor()))
+			if (!board.getCurrentPlayer().getColor().equals(king.getColor()))
 			{
 				for (Piece enemyPiece : (ArrayList<Piece>) piecesThatCanKillKing.clone())
 				{
@@ -136,7 +136,7 @@ public class Player
 			 * in order for this to be a possibility. Also, the possibility of an ally blocking an enemy's path to the king
 			 * is handeled below as well
 			 */
-			if (checkMate == true && board.getCurrentPlayer().getColor().equals(king.getColor()))
+			if (checkMate == true && !board.getCurrentPlayer().getColor().equals(king.getColor()))
 			{	
 				ArrayList<Path> vulnerableKingPaths = new ArrayList<>();			
 				

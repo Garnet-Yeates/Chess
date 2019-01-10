@@ -1,4 +1,4 @@
-package edu.wit.yeatesg.pathing;
+package edu.wit.yeatesg.chess.pathing;
 import java.util.ArrayList;
 
 import edu.wit.yeatesg.chess.objects.pieces.Piece;

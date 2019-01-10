@@ -5,9 +5,9 @@ import java.util.ArrayList;
 
 import edu.wit.yeatesg.chess.main.Chess;
 import edu.wit.yeatesg.chess.objects.Tile;
-import edu.wit.yeatesg.pathing.Path;
-import edu.wit.yeatesg.pathing.PathList;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Path;
+import edu.wit.yeatesg.chess.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class King extends Piece
 {	
@@ -49,7 +49,7 @@ public class King extends Piece
 					}
 					for (Tile t : tilesToCheck)
 					{
-						if (board.isUnderAttack(t.getLocation(), getColor()))
+						if (board.isUnderAttack(t.getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE))
 						{
 							System.out.println("Can't castle because one of the between tiles will put the king in check");
 							return false;

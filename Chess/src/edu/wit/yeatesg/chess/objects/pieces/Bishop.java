@@ -3,8 +3,8 @@ package edu.wit.yeatesg.chess.objects.pieces;
 import java.awt.Color;
 
 import edu.wit.yeatesg.chess.objects.Tile;
-import edu.wit.yeatesg.pathing.Direction;
-import edu.wit.yeatesg.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Direction;
+import edu.wit.yeatesg.chess.pathing.PathList;
 
 public class Bishop extends Piece
 {

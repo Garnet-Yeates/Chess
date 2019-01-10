@@ -1,4 +1,4 @@
-package edu.wit.yeatesg.pathing;
+package edu.wit.yeatesg.chess.pathing;
 
 public class Point
 {

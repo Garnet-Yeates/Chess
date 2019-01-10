@@ -15,7 +15,7 @@ import edu.wit.yeatesg.chess.objects.pieces.Knight;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.objects.pieces.Queen;
 import edu.wit.yeatesg.chess.objects.pieces.Rook;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class PromotionWindow extends JFrame
 {

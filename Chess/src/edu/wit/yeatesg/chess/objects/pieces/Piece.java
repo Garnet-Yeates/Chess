@@ -8,9 +8,9 @@ import javax.swing.ImageIcon;
 import edu.wit.yeatesg.chess.main.Chess;
 import edu.wit.yeatesg.chess.objects.Board;
 import edu.wit.yeatesg.chess.objects.Tile;
-import edu.wit.yeatesg.pathing.Path;
-import edu.wit.yeatesg.pathing.PathList;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Path;
+import edu.wit.yeatesg.chess.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public abstract class Piece
 {
@@ -276,7 +276,7 @@ public abstract class Piece
 	 */
 	public boolean isUnderAttack()
 	{
-		return board.isUnderAttack(getLocation(), getColor());
+		return board.isUnderAttack(getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
 	}
 	
 	/**

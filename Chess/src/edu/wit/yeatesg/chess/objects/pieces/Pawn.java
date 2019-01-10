@@ -5,9 +5,9 @@ import java.util.ArrayList;
 
 import edu.wit.yeatesg.chess.objects.PromotionWindow;
 import edu.wit.yeatesg.chess.objects.Tile;
-import edu.wit.yeatesg.pathing.Path;
-import edu.wit.yeatesg.pathing.PathList;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Path;
+import edu.wit.yeatesg.chess.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Pawn extends Piece
 {

@@ -26,12 +26,13 @@ import edu.wit.yeatesg.chess.objects.pieces.Pawn;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.objects.pieces.Queen;
 import edu.wit.yeatesg.chess.objects.pieces.Rook;
-import edu.wit.yeatesg.pathing.Path;
-import edu.wit.yeatesg.pathing.PathList;
-import edu.wit.yeatesg.pathing.Point;
+import edu.wit.yeatesg.chess.pathing.Path;
+import edu.wit.yeatesg.chess.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Board extends JPanel
 {
+	public static boolean paintBorder = false;
 	private static final long serialVersionUID = -180155589480308568L;
 
 	@SuppressWarnings("unused")
@@ -134,6 +135,12 @@ public class Board extends JPanel
 	private ImageIcon whiteCursor = new ImageIcon("assets/Cursor_White.png");
 	private ImageIcon blackCursor = new ImageIcon("assets/Cursor_Black.png");
 	
+	private static int xOffset = 0 + ((paintBorder) ? 6 : 0);
+	private static int yOffset = 0 + ((paintBorder) ? 6 : 0);
+	
+	public static final int X_LENGTH = xOffset + 768 - 10;
+	public static final int Y_LENGTH = yOffset + 768 - 10;
+	
 	/**
 	 * This method is called every game tick and continuously updates the graphics that are displayed
 	 * on the board. The graphics that are updated include the special cursors, all of the pieces and
@@ -142,13 +149,22 @@ public class Board extends JPanel
 	@Override
 	public void paint(Graphics g)
 	{	
+		// BLOCK: Draw Border
+		if (paintBorder) {
+			g.setColor(Color.BLACK);
+			g.drawRect(0, 0, X_LENGTH - 1, Y_LENGTH - 1);
+			g.drawRect(1, 1, X_LENGTH - 3, Y_LENGTH - 3);
+			g.drawRect(2, 2, X_LENGTH - 5, Y_LENGTH - 5);
+
+		}
+		
 		// BLOCK: Draw Tiles
 		{
-			int yPos = 0;
-			int xPos = 0;
+			int yPos = yOffset / 2;
+			int xPos = xOffset / 2;
 			for (int y = 0; y < numTiles; y++)
 			{
-				xPos = 0;
+				xPos = xOffset / 2;
 				for (int x = 0; x < numTiles; x++)
 				{
 					Point p = new Point(y, x);
@@ -172,8 +188,8 @@ public class Board extends JPanel
 					if (t.hasPiece())
 					{
 						Piece p = t.getPiece();
-						int xPos = loc.x * tileSize;
-						int yPos = loc.y * tileSize;
+						int xPos = loc.x * tileSize + xOffset / 2;
+						int yPos = loc.y * tileSize + yOffset / 2;
 
 						if (currentPlayer.hasSelectedPiece())
 						{
@@ -296,13 +312,19 @@ public class Board extends JPanel
 		return list;
 	}
 	
+	/**
+	 * Checks whether the given location is under attack by the given team
+	 * inputted into the parameter
+	 * @param point the {@link Point} location that might be under attack
+	 * @param color the Color of the team that might be attacking this location
+	 * @return true if this spot is under attack
+	 */
 	public boolean isUnderAttack(Point point, Color color)
 	{
-		Color enemyColor = color.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
 		ArrayList<Piece> pieces = getLivingPieces();
 		for (Piece p : pieces)
 		{
-			if (p.getColor().equals(enemyColor))
+			if (p.getColor().equals(color))
 			{
 				PathList paths = p.getPaths();
 				for (Path path : paths)
@@ -333,6 +355,8 @@ public class Board extends JPanel
 	 */
 	public void switchTurns()
 	{
+		p1.checkCheckmate();
+		p2.checkCheckmate();
 		if (p1.equals(currentPlayer))
 		{
 			currentPlayer = p2;
@@ -341,24 +365,27 @@ public class Board extends JPanel
 		{
 			currentPlayer = p1;
 		}
-		p1.checkCheckmate();
-		p2.checkCheckmate();
+
 	}
 	
 	boolean frozen = false;
 	
+	/**
+	 * Freezes the game, making it so user input isn't recognized
+	 */
 	public void freeze()
 	{
 		frozen = true;
 	}
 	
+	/**
+	 * Unfreezes the game, allowing for user input to be read again
+	 */
 	public void unFreeze()
 	{
 		frozen = false;
 	}
-	
-	private int preferredSize = numTiles * tileSize - 10;
-	
+		
 	/**
 	 * Overrides the {@link #getPreferredSize()} method in Component to obtain
 	 * a preferred size that makes sense for this chess board
@@ -366,7 +393,7 @@ public class Board extends JPanel
 	@Override
 	public Dimension getPreferredSize()
 	{
-		return new Dimension(preferredSize, preferredSize);
+		return new Dimension(X_LENGTH, Y_LENGTH);
 	}
 	
 	private Timer timer = new Timer(13, this.new BoardTimer());
@@ -404,8 +431,8 @@ public class Board extends JPanel
 		{
 			if (!frozen)
 			{
-				int x = e.getX() / (tileSize);
-				int y = e.getY() / (tileSize);
+				int x = (e.getX() - xOffset / 2) / (tileSize);
+				int y = (e.getY() - yOffset / 2) / (tileSize);
 				Tile clickedTile = tileAt(new Point(y, x));
 				if (!currentPlayer.hasSelectedPiece()) // If the current player doesn't have a selected piece, they must be trying to select
 				{
