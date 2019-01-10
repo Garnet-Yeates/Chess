@@ -32,10 +32,8 @@ import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Board extends JPanel
 {
-	public static boolean paintBorder = false;
 	private static final long serialVersionUID = -180155589480308568L;
 
-	@SuppressWarnings("unused")
 	private JFrame container;
 
 	private int tileSize = 96;
@@ -47,7 +45,7 @@ public class Board extends JPanel
 	private Player p2 = new Player(Color.BLACK, this);
 
 	private Player currentPlayer = p1;
-
+	
 	public Board(JFrame container)
 	{
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
@@ -122,8 +120,8 @@ public class Board extends JPanel
 			{
 				Point loc = new Point(y, x);
 				Tile t = new Tile(((white == true) ? new Color(236, 238, 212) : new Color(116, 150, 84)), loc, this);
-				board[y][x] = t;
-				if (x == numTiles - 1)
+				board[y][x] = t;																			// 116, 150, 8
+				if (x == numTiles - 1) 
 				{
 					white = ((white) ? false : true);
 				}
@@ -135,11 +133,11 @@ public class Board extends JPanel
 	private ImageIcon whiteCursor = new ImageIcon("assets/Cursor_White.png");
 	private ImageIcon blackCursor = new ImageIcon("assets/Cursor_Black.png");
 	
-	private static int xOffset = 0 + ((paintBorder) ? 6 : 0);
-	private static int yOffset = 0 + ((paintBorder) ? 6 : 0);
+	private static int xOffset = 0;
+	private static int yOffset = 0;
 	
-	public static final int X_LENGTH = xOffset + 768 - 10;
-	public static final int Y_LENGTH = yOffset + 768 - 10;
+	public static final int X_LENGTH = xOffset + 768;
+	public static final int Y_LENGTH = yOffset + 768;
 	
 	/**
 	 * This method is called every game tick and continuously updates the graphics that are displayed
@@ -150,13 +148,12 @@ public class Board extends JPanel
 	public void paint(Graphics g)
 	{	
 		// BLOCK: Draw Border
-		if (paintBorder) {
+		/*{
 			g.setColor(Color.BLACK);
 			g.drawRect(0, 0, X_LENGTH - 1, Y_LENGTH - 1);
 			g.drawRect(1, 1, X_LENGTH - 3, Y_LENGTH - 3);
 			g.drawRect(2, 2, X_LENGTH - 5, Y_LENGTH - 5);
-
-		}
+		}*/
 		
 		// BLOCK: Draw Tiles
 		{
@@ -365,7 +362,6 @@ public class Board extends JPanel
 		{
 			currentPlayer = p1;
 		}
-
 	}
 	
 	boolean frozen = false;
@@ -492,10 +488,80 @@ public class Board extends JPanel
 		public void mouseReleased(MouseEvent arg0) {}
 		public void mouseDragged(MouseEvent arg0) {}
 	}
-
+	
 	public void finishGame(Color winner)
 	{
 		freeze();
 		System.out.println((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
+	}
+	
+	private Timer blitzTimer = new Timer(1000, new BlitzTimer());
+	
+	{
+		blitzTimer.start();
+	}
+	
+	private int p1BlitzTimer = 90;
+	private int p2BlitzTimer = 90;
+	
+	public String secondsToString(int seconds)
+	{
+		int mins = seconds / 60;
+		int remSecs = seconds % 60;
+		return mins + ":" + (remSecs < 10 ? "0" : "") + (remSecs);
+	}
+	
+	public String getP1BlitzClockString()
+	{
+		return secondsToString(p1BlitzTimer);
+	}
+	
+	public String getP2BlitzClockString()
+	{
+		return secondsToString(p2BlitzTimer);
+	}
+	
+	public String getCurrentPlayerString()
+	{
+		return (currentPlayer == p1) ? "<- Player 1's Turn" : "Player 2's Turn ->";
+	}
+	
+	public void timeout(Player p)
+	{
+		freeze();
+		blitzTimer.stop();
+		System.out.println((p.getColor().equals(Color.WHITE) ? "WHITE" : "BLACK") + " TEAM LOSES AS A RESULT OF BEING FUCKING SLOW");
+	}
+	
+	public class BlitzTimer implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if (p1BlitzTimer < 1 || p2BlitzTimer < 1)
+			{
+				timeout(p1BlitzTimer < 1 ? p1 : p2);
+			}
+			
+			if (!frozen)
+			{
+				if (currentPlayer == p1)
+				{
+					p1BlitzTimer--;
+					p2BlitzTimer++;
+				}
+				else
+				{
+					p1BlitzTimer++;
+					p2BlitzTimer--;
+				}
+				
+				if (container instanceof AlternatativeFrame)
+				{
+					((AlternatativeFrame) container).updateClocks();
+				}
+			}
+		
+		}
 	}
 }

@@ -109,8 +109,22 @@ public class Pawn extends Piece
 		jumpedTwiceOnFirstMove = twice;
 	}
 	
+	@Override
 	public void postMove()
 	{ 
+		super.postMove();
+
+		if (this.getLastLocation().getVerticalDistance(this.getLocation()) > 1)
+		{
+			setJumpedTwiceOnFirstMove(true);
+		}
+		
+		if (tile.getLocation().equals(getPassantLocation()))
+		{
+			getPassant().getTile().setPiece(null);
+			getPassant().setTile(null);
+		}
+		
 		if ((direction == 1 && getLocation().y == 7) || (direction == -1 && getLocation().y == 0))
 		{
 			new PromotionWindow(this, board);
@@ -153,18 +167,6 @@ public class Pawn extends Piece
 				p.passantJumpLocation = null;
 			}
 		}
-	}
-	
-	private Point lastLocation;
-
-	public Point getLastLocation()
-	{
-		return lastLocation;
-	}
-	
-	public void setLastLocation(Point loc)
-	{
-		lastLocation = loc;
 	}
 	
 	public Piece getPassant()

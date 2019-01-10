@@ -22,7 +22,9 @@ public abstract class Piece
 	protected int nextMoveNum = 1;
 
 	protected ImageIcon icon;
-	private ImageIcon outlineIcon;
+	protected ImageIcon outlineIcon;
+	
+	protected Point lastLocation;
 
 	/**
 	 * Sets the class field {@link Piece#board}. This board will be used for all pieces, whether it
@@ -97,48 +99,40 @@ public abstract class Piece
 						
 					}
 				}
-
-				Piece selectedPiece = board.getCurrentPlayer().getSelectedPiece();
-
-				if (selectedPiece instanceof Pawn)
+				
+				if (preMove(t))
 				{
-					((Pawn) selectedPiece).setLastLocation(selectedPiece.getLocation());
-
-					if (t.getLocation().getVerticalDistance(selectedPiece.getLocation()) > 1)
-					{
-						((Pawn) selectedPiece).setJumpedTwiceOnFirstMove(true);
-					}
+					move(t);
+					postMove(); // Actual movement just happened
+					return;
 				}
-
-				// ACTUAL MOVEMENT JUST HAPPENED
-				selectedPiece.getTile().setPiece(null);
-				selectedPiece.setTile(t);
-				nextMoveNum++;
-				t.setPiece(selectedPiece);
-
-				if (selectedPiece instanceof Pawn)
-				{
-					Pawn pawn = (Pawn) selectedPiece;
-
-					if (t.getLocation().equals(pawn.getPassantLocation()))
-					{
-						pawn.getPassant().getTile().setPiece(null);
-						pawn.getPassant().setTile(null);
-					}
-
-					pawn.postMove();
-				}
-
-				board.getCurrentPlayer().deselect();
-				board.repaint();
-				board.switchTurns();
-				Chess.playSound("assets/Pickup_Place.wav");
-				return;
 			}
 		}
 
 		// CONDITION can't move there...
 		Chess.playSound("assets/Invalid_Move.wav");
+	}
+	
+	public boolean preMove(Tile t)
+	{	
+		setLastLocation(this.getLocation());
+		return true;
+	}
+	
+	public void move(Tile t)
+	{
+		getTile().setPiece(null);
+		setTile(t);
+		nextMoveNum++;
+		t.setPiece(this);
+	}
+	
+	public void postMove()
+	{
+		board.getCurrentPlayer().deselect();
+		board.repaint();
+		board.switchTurns();
+		Chess.playSound("assets/Pickup_Place.wav");
 	}
 
 
@@ -269,6 +263,17 @@ public abstract class Piece
 	{
 		return nextMoveNum > 1;
 	}
+	
+	public Point getLastLocation()
+	{
+		return lastLocation;
+	}
+	
+	public void setLastLocation(Point loc)
+	{
+		lastLocation = loc;
+	}
+	
 	
 	/**
 	 * Checks to see if this piece is under attack (able to be attacked by enemies)
