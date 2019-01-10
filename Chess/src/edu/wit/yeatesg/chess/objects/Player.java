@@ -137,40 +137,57 @@ public class Player
 			 * is handeled below as well
 			 */
 			if (checkMate == true && !board.getCurrentPlayer().getColor().equals(king.getColor()))
-			{	
-				ArrayList<Path> vulnerableKingPaths = new ArrayList<>();			
-				
-				for (Piece enemyPiece : king.getEnemyPieces())
+			{									
+				for (Path kingPath : (ArrayList<Path>) king.getPaths().clone())
 				{
-					for (Path enemyPath : enemyPiece.getPaths())
+					for (Piece enemy : king.getEnemyPieces())
 					{
-						for (Path kingPath : kingPaths)
+						for (Path enemyPath : enemy.getPaths())
 						{
-							if (enemyPath.intercepts(kingPath))
+							if (!kingPath.intercepts(enemyPath))
 							{
-								vulnerableKingPaths.add(enemyPath);
+								checkMate = false;
 							}
 						}
 					}
 				}
 				
-				for (Path vulnerablePath : (ArrayList<Path>) vulnerableKingPaths.clone())
+				if (checkMate)
 				{
-					for (Piece allyPiece : king.getAllyPieces())
+					ArrayList<Path> vulnerableKingPaths = new ArrayList<>();			
+					
+					for (Piece enemyPiece : king.getEnemyPieces())
 					{
-						for (Path allyPath : allyPiece.getPaths())
+						for (Path enemyPath : enemyPiece.getPaths())
 						{
-							if (allyPath.intercepts(vulnerablePath))
+							for (Path kingPath : kingPaths)
 							{
-								vulnerableKingPaths.remove(vulnerablePath);
+								if (enemyPath.intercepts(kingPath))
+								{
+									vulnerableKingPaths.add(enemyPath);
+								}
 							}
 						}
 					}
-				}
-				
-				if (vulnerableKingPaths.isEmpty()) 
-				{
-					checkMate = false;
+					
+					for (Path vulnerablePath : (ArrayList<Path>) vulnerableKingPaths.clone())
+					{
+						for (Piece allyPiece : king.getAllyPieces())
+						{
+							for (Path allyPath : allyPiece.getPaths())
+							{
+								if (allyPath.intercepts(vulnerablePath))
+								{
+									vulnerableKingPaths.remove(vulnerablePath);
+								}
+							}
+						}
+					}
+					
+					if (vulnerableKingPaths.isEmpty()) 
+					{
+						checkMate = false;
+					}	
 				}
 			}
 			
