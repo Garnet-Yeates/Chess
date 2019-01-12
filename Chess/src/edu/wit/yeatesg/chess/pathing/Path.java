@@ -10,8 +10,9 @@ public class Path
 	private static Board board;
 	
 	private ArrayList<Tile> tiles = new ArrayList<>();
+	private Point specialKillSpot = null;
 	private Piece killed;
-	public Piece piece;
+	private Piece creator;
 	
 	public static void setBoard(Board b)
 	{
@@ -25,7 +26,7 @@ public class Path
 	public Path(Tile t, Piece creator)
 	{
 		tiles.add(t);
-		piece = creator;
+		this.creator = creator;
 		if (t.hasPiece() && !t.getPiece().getColor().equals(creator.getColor()))
 		{
 			killed = t.getPiece();
@@ -34,7 +35,7 @@ public class Path
 	
 	public Path(ArrayList<Tile> tiles, Piece creator)
 	{
-		piece = creator;
+		this.creator = creator;
 		this.tiles.addAll(tiles);
 		for (Tile t : tiles)
 		{
@@ -48,7 +49,7 @@ public class Path
 	public Path(Direction direction, Point point, Piece creator)
 	{	
 		Piece piece = board.pieceAt(point);
-		this.piece = creator;
+		this.creator = creator;
 		Point p = point.clone();
 
 		int Δx = 0;
@@ -132,6 +133,21 @@ public class Path
 		return killed;
 	}
 	
+	public void setSpecialKillSpot(Point p)
+	{
+		this.specialKillSpot = p;
+	}
+	
+	public boolean hasSpecialKillSpot()
+	{
+		return specialKillSpot != null;
+	}
+	
+	public Point getSpecialKillSpot()
+	{
+		return specialKillSpot;
+	}
+	
 	public boolean contains(Tile t)
 	{
 		return tiles.contains(t);
@@ -139,6 +155,6 @@ public class Path
 	
 	public Piece getCreator()
 	{
-		return piece;
+		return creator;
 	}
 }

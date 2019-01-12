@@ -85,24 +85,11 @@ public abstract class Piece
 			if (p.contains(t))
 			{
 				if (p.killsEnemy())
-				{
-					if (t.equals(p.getKilledPiece().getTile()))
-					{
+				{	
+					if (t.equals(p.getKilledPiece().getTile()) || p.hasSpecialKillSpot() && t.getLocation().equals(p.getSpecialKillSpot()))
+					{	
+						p.getKilledPiece().getTile().setPiece(null);
 						p.getKilledPiece().setTile(null);
-						
-						if (p.getKilledPiece() instanceof King)
-						{
-							board.finishGame(color);
-							board.getCurrentPlayer().getSelectedPiece().getTile().setPiece(null);
-							t.setPiece(board.getCurrentPlayer().getSelectedPiece());
-							board.getCurrentPlayer().getSelectedPiece().setTile(t);
-							board.getCurrentPlayer().deselect();
-							board.repaint();
-							nextMoveNum++;
-							Chess.playSound("assets/Victory.wav");
-							return;
-						}
-						
 					}
 				}
 				
@@ -136,7 +123,6 @@ public abstract class Piece
 	//		board.getCurrentPlayer().deselect();
 			if (this instanceof King)
 			{
-				System.out.println("Ah");
 				t.setBlinkPiece(getPlayer().getKing());
 				t.blinkHighlight(Color.RED);
 			}
@@ -191,7 +177,6 @@ public abstract class Piece
 			t.setPiece(this);
 			setTile(t);		
 				
-			
 			King king = getPlayer().getKing();
 			if (king.isUnderAttack())
 			{
@@ -390,7 +375,6 @@ public abstract class Piece
 	 */
 	public boolean isUnderAttack()
 	{
-		System.out.println(this.getClass().getSimpleName());
 		return board.isUnderAttack(getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
 	}
 	

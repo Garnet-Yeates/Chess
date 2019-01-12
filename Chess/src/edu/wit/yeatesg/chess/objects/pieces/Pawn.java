@@ -74,15 +74,18 @@ public class Pawn extends Piece
 		
 		for (Tile diagTile : diagTiles)
 		{
+			Path p;
 			if (diagTile != null && diagTile.hasPiece() && !diagTile.getPiece().getColor().equals(color))
 			{
-				pathList.add(new Path(diagTile, this));
+				pathList.add(p = new Path(diagTile, this));
 			}
 			else if (diagTile != null && !diagTile.hasPiece())
 			{
 				if (passantJumpLocation != null && passantJumpLocation.equals(diagTile.getLocation()))
 				{
-					pathList.add(new Path(diagTile, this)); // If this Pawn has a passant loc at a diagonal tile, add it to the path list
+					pathList.add(p = new Path(diagTile, this));
+					p.setKillableEnemy(passant);
+					p.setSpecialKillSpot(passantJumpLocation);
 				}
 			}
 		}
@@ -119,11 +122,11 @@ public class Pawn extends Piece
 			setJumpedTwiceOnFirstMove(true);
 		}
 				
-		if (tile.getLocation().equals(getPassantLocation()))
+		/*(if (tile.getLocation().equals(getPassantLocation()))
 		{
 			getPassant().getTile().setPiece(null);
 			getPassant().setTile(null);
-		}
+		}*/
 		
 		if ((direction == 1 && getLocation().y == 7) || (direction == -1 && getLocation().y == 0))
 		{
