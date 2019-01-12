@@ -3,6 +3,8 @@ package edu.wit.yeatesg.chess.objects;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -53,6 +55,7 @@ public class AlternatativeFrame extends JFrame
 	 */
 	public AlternatativeFrame()
 	{
+		addKeyListener(this.new BoardKeyListener());
 		lblNewLabel.setForeground(Color.WHITE);
 		lblNewLabel.setBorder(new LineBorder(Color.WHITE, 3, true));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,5 +125,29 @@ public class AlternatativeFrame extends JFrame
 		p1TimerLabel.setText(board.getP1BlitzClockString());
 		p2TimerLabel.setText(board.getP2BlitzClockString());
 		whoseTurnLabel.setText(board.getCurrentPlayerString());
+	}
+	
+	public class BoardKeyListener implements KeyListener
+	{
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			board.onKeyPress(e);
+		}
+
+		@Override
+		public void keyReleased(KeyEvent arg0)
+		{
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent arg0)
+		{
+
+
+		}
+
 	}
 }

@@ -22,7 +22,10 @@ public class King extends Piece
 		ArrayList<Path> pathList = new ArrayList<Path>();
 		for (Tile t : getTile().getAdjacentTiles())
 		{
-			pathList.add(new Path(t, this));
+			if (!t.hasPiece() || !t.getPiece().getColor().equals(color))
+			{
+				pathList.add(new Path(t, this));	
+			}
 		}
 		return new PathList(pathList);
 	}

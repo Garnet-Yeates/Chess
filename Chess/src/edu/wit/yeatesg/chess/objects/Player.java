@@ -7,6 +7,7 @@ import edu.wit.yeatesg.chess.objects.pieces.King;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.pathing.Path;
 import edu.wit.yeatesg.chess.pathing.PathList;
+import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Player
 {
@@ -90,6 +91,45 @@ public class Player
 	{
 		return king;
 	}
+	
+	public boolean hasSafeMove()
+	{
+		for (Piece allyPiece : getPieces())
+		{
+			if (allyPiece.hasSafeMove())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean checkStalemate()
+	{
+		if (!king.inCheck() && !hasSafeMove())
+		{
+			board.finishGame(null);
+			return true;
+		}
+		return false;
+	}
+	
+	public ArrayList<Piece> getPieces()
+	{
+		ArrayList<Piece> list = new ArrayList<>();
+		for (int y = 0; y < 8; y++)
+		{
+			for (int x = 0; x < 8; x++)
+			{
+				Point loc = new Point(y, x);
+				Piece p;
+				if ((p = board.pieceAt(loc)) != null && p.getColor().equals(getColor()))
+				{
+					list.add(p);
+				}
+			}
+		}
+		return list;	}
 
 	@SuppressWarnings("unchecked")
 	public void checkCheckmate()

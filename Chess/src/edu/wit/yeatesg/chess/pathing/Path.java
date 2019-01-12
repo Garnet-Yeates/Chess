@@ -25,6 +25,7 @@ public class Path
 	public Path(Tile t, Piece creator)
 	{
 		tiles.add(t);
+		piece = creator;
 		if (t.hasPiece() && !t.getPiece().getColor().equals(creator.getColor()))
 		{
 			killed = t.getPiece();
@@ -33,6 +34,7 @@ public class Path
 	
 	public Path(ArrayList<Tile> tiles, Piece creator)
 	{
+		piece = creator;
 		this.tiles.addAll(tiles);
 		for (Tile t : tiles)
 		{
@@ -46,6 +48,7 @@ public class Path
 	public Path(Direction direction, Point point, Piece creator)
 	{	
 		Piece piece = board.pieceAt(point);
+		this.piece = creator;
 		Point p = point.clone();
 
 		int Δx = 0;

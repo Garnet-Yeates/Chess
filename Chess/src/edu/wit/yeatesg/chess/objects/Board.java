@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -166,8 +167,16 @@ public class Board extends JPanel
 				{
 					Point p = new Point(y, x);
 					Tile t = tileAt(p);
-					g.setColor(t.getColor());
+					
+					g.setColor(t.hasBlinkColor() ? t.getBlinkColor() : t.getColor());
 					g.fillRect(xPos, yPos, tileSize, tileSize);
+					
+					if (t.hasBlinkColor() && t.hasBlinkPiece())
+					{
+						t.getBlinkPiece().getImageIcon().paintIcon(this, g, xPos, yPos);
+					}
+					
+
 					xPos += tileSize;
 				}
 				yPos += tileSize;
@@ -318,22 +327,63 @@ public class Board extends JPanel
 	 */
 	public boolean isUnderAttack(Point point, Color color)
 	{
-		ArrayList<Piece> pieces = getLivingPieces();
-		for (Piece p : pieces)
+		Tile t;
+		if ((t = tileAt(point)) != null)
 		{
-			if (p.getColor().equals(color))
+			if (!t.hasPiece() || !t.getPiece().getColor().equals(color))
 			{
-				PathList paths = p.getPaths();
-				for (Path path : paths)
+				ArrayList<Piece> pieces = getLivingPieces();
+				for (Piece p : pieces)
 				{
-					if (path.contains(tileAt(point)))
+					if (p.getColor().equals(color))
 					{
-						return true;
+						PathList paths = p.getPaths();
+						for (Path path : paths)
+						{
+							if (path.contains(tileAt(point)))
+							{
+								return true;
+							}
+						}
 					}
 				}
 			}
 		}
+	
 		return false;
+	}
+	
+	public ArrayList<Path> getAttackingPaths(Point point, Color color)
+	{
+		ArrayList<Path> attackingPaths = new ArrayList<Path>();
+		Tile t;
+		if ((t = tileAt(point)) != null)
+		{
+			if (!t.hasPiece() || !t.getPiece().getColor().equals(color))
+			{
+				ArrayList<Piece> pieces = getLivingPieces();
+				for (Piece p : pieces)
+				{
+					if (p.getColor().equals(color))
+					{
+						PathList paths = p.getPaths();
+						for (Path path : paths)
+						{
+							if (path.contains(tileAt(point)))
+							{
+								attackingPaths.add(path);
+							}
+						}
+					}
+				}
+			}
+		}
+		return attackingPaths;
+	}
+	
+	public Player getPlayer(Color color)
+	{
+		return (color == Color.WHITE) ? p1 : p2;
 	}
 
 	/**
@@ -346,14 +396,26 @@ public class Board extends JPanel
 		return currentPlayer;
 	}
 	
+	public void examineCheckmate()
+	{
+		p1.checkCheckmate();
+		p2.checkCheckmate();
+	}
+	
+	public void examineStalemate()
+	{
+		p1.checkStalemate();
+		p2.checkStalemate();
+	}
+	
 	/**
 	 * This method is called after each player makes a move, and hands over
 	 * selecting and moving rights to the other player
 	 */
 	public void switchTurns()
 	{
-		p1.checkCheckmate();
-		p2.checkCheckmate();
+		examineCheckmate();
+
 		if (p1.equals(currentPlayer))
 		{
 			currentPlayer = p2;
@@ -362,6 +424,9 @@ public class Board extends JPanel
 		{
 			currentPlayer = p1;
 		}
+		
+		examineStalemate();
+		
 	}
 	
 	boolean frozen = false;
@@ -392,7 +457,7 @@ public class Board extends JPanel
 		return new Dimension(X_LENGTH, Y_LENGTH);
 	}
 	
-	private Timer timer = new Timer(13, this.new BoardTimer());
+	private Timer timer = new Timer(16, this.new BoardTimer());
 	
 	/**
 	 * The BoardTimer class is an ActionListener designed to handle repainting this component.
@@ -405,12 +470,20 @@ public class Board extends JPanel
 		@Override
 		public void actionPerformed(ActionEvent arg0)
 		{
+			Tile.doTicks();
 			repaint();
 		}
 	}
 
 	private int mouseX = 0;
 	private int mouseY = 0;
+	
+	public Tile tileAtMouse()
+	{
+		int x = (mouseX - xOffset / 2) / (tileSize);
+		int y = (mouseY - yOffset / 2) / (tileSize);
+		return tileAt(new Point(y, x));
+	}
 
 	/**
 	 * The BoardMouseListener class is a MouseListener designed to capture all mouse events that occur on
@@ -425,7 +498,7 @@ public class Board extends JPanel
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
-			if (!frozen)
+			if (!frozen && !Tile.areTilesBlinking())
 			{
 				int x = (e.getX() - xOffset / 2) / (tileSize);
 				int y = (e.getY() - yOffset / 2) / (tileSize);
@@ -439,7 +512,7 @@ public class Board extends JPanel
 					}
 					else // In this condition, the player tried to select one of their opponent's pieces
 					{
-						Chess.playSound("assets/Invalid_Click.wav");
+						//Chess.playSound("assets/Invalid_Click.wav");
 					}
 				}
 				else if (currentPlayer.getSelectedPiece().getTile().equals(clickedTile))
@@ -462,14 +535,14 @@ public class Board extends JPanel
 						}
 						else
 						{
-							Chess.playSound("assets/Invalid_Move.wav");
+						//	Chess.playSound("assets/Invalid_Move.wav");
 						}
 					}
 				}
 			}
 			else
 			{
-				Chess.playSound("assets/Invalid_Move.wav");
+			//	Chess.playSound("assets/Invalid_Move.wav");
 			}
 		}
 		
@@ -492,7 +565,16 @@ public class Board extends JPanel
 	public void finishGame(Color winner)
 	{
 		freeze();
-		System.out.println((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
+		
+		if (winner != null)
+		{
+			System.out.println((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
+		}
+		else
+		{
+			System.out.println("Stalemate");
+		}
+		
 	}
 	
 	private Timer blitzTimer = new Timer(1000, new BlitzTimer());
@@ -538,7 +620,8 @@ public class Board extends JPanel
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			if (p1BlitzTimer < 1 || p2BlitzTimer < 1)
+			/*
+		 	if (p1BlitzTimer < 1 || p2BlitzTimer < 1)
 			{
 				timeout(p1BlitzTimer < 1 ? p1 : p2);
 			}
@@ -562,6 +645,22 @@ public class Board extends JPanel
 				}
 			}
 		
+			 */
+			
+		}
+	}
+
+	public void onKeyPress(KeyEvent e)
+	{
+		if (e.getKeyCode() == KeyEvent.VK_DELETE)
+		{
+			if (currentPlayer.hasSelectedPiece())
+			{
+				currentPlayer.getSelectedPiece().getTile().setPiece(null);
+				currentPlayer.getSelectedPiece().setTile(null);
+				currentPlayer.deselect();
+
+			}
 		}
 	}
 }

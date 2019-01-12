@@ -12,6 +12,12 @@ public class Tile
 	private Point location;
 	private Color color;
 	
+	private Color[] blinkArray;
+	private Color blinkColor = null;
+	private Piece blinkPiece = null;
+	
+	private static ArrayList<Tile> tiles = new ArrayList<>();
+	
 	/**
 	 * Constructs a new Tile object
 	 * @param color The color of the tile (should be black or white)
@@ -20,6 +26,7 @@ public class Tile
 	 */
 	public Tile(Color color, Point p, Board b)
 	{
+		tiles.add(this);
 		this.location = p;
 		this.color = color;
 		this.board = b;
@@ -129,4 +136,100 @@ public class Tile
 		return false;
 	}
 	
+	private int blinkIndex = 0;
+	
+	public void onTick()
+	{		
+		if (blinkArray != null)
+		{	
+			if (blinkIndex < blinkArray.length)
+			{
+				blinkColor = blinkArray[blinkIndex];
+				blinkIndex++;
+			}
+			else
+			{
+				blinkArray = null;
+				blinkColor = null;
+				blinkPiece = null;
+				blinkIndex = 0;
+			}
+		}
+	}
+	
+	public boolean hasBlinkColor()
+	{
+		return blinkColor != null;
+	}
+	
+	public Color getBlinkColor()
+	{
+		return blinkColor;
+	}
+	
+	public void setBlinkPiece(Piece p)
+	{
+		blinkPiece = p;
+	}
+	
+	public boolean hasBlinkPiece()
+	{
+		return blinkPiece != null;
+	}
+	
+	public Piece getBlinkPiece()
+	{
+		return blinkPiece;
+	}
+
+	public void blinkHighlight(Color highlight)
+	{
+		int size = 35;
+		int gap = 5;
+		
+		double highlightWeight = 0.70;
+		
+		System.out.println(getLocation() + " " + getBlinkPiece());
+		
+		if (!hasPiece() && !hasBlinkPiece()) highlightWeight = 0.35;
+		int r = (int) (highlightWeight * highlight.getRed()) + (int) ((1 - highlightWeight) * color.getRed());
+		int g = (int) (highlightWeight * highlight.getGreen()) + (int) ((1 - highlightWeight) * color.getGreen());
+		int b = (int) (highlightWeight * highlight.getBlue()) + (int) ((1 - highlightWeight) * color.getBlue());
+		
+		highlight = new Color(r, g, b);
+	
+		blinkArray = new Color[size];
+		
+		Color col = color;
+		
+		for (int i = 0; i < blinkArray.length; i++)
+		{
+			if (i % gap == 0)
+			{
+				col = col.equals(color) ? highlight : color;				
+			}
+			
+			blinkArray[i] = col;	
+		}
+	}
+	
+	public static void doTicks()
+	{
+		for (Tile t : tiles)
+		{
+			t.onTick();
+		}
+	}
+
+	public static boolean areTilesBlinking()
+	{
+		for (Tile t : tiles)
+		{
+			if (t.hasBlinkColor())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

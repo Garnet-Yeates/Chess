@@ -22,35 +22,35 @@ public class Knight extends Piece
 		Point loc = getLocation();
 		Tile t;
 		
-		if ((t = board.tileAt(new Point(loc.y - 2, loc.x + 1))) != null)
+		if ((t = board.tileAt(new Point(loc.y - 2, loc.x + 1))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y - 2, loc.x - 1))) != null)
+		if ((t = board.tileAt(new Point(loc.y - 2, loc.x - 1))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y + 2, loc.x + 1))) != null)
+		if ((t = board.tileAt(new Point(loc.y + 2, loc.x + 1))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y + 2, loc.x - 1))) != null)
+		if ((t = board.tileAt(new Point(loc.y + 2, loc.x - 1))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y - 1, loc.x + 2))) != null)
+		if ((t = board.tileAt(new Point(loc.y - 1, loc.x + 2))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y + 1, loc.x + 2))) != null)
+		if ((t = board.tileAt(new Point(loc.y + 1, loc.x + 2))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y - 1, loc.x - 2))) != null)
+		if ((t = board.tileAt(new Point(loc.y - 1, loc.x - 2))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		}
-		if ((t = board.tileAt(new Point(loc.y + 1, loc.x - 2))) != null)
+		if ((t = board.tileAt(new Point(loc.y + 1, loc.x - 2))) != null && (!t.hasPiece() || !t.getPiece().getColor().equals(color)))
 		{
 			pathList.add(new Path(t, this));
 		

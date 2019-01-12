@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
 
 import edu.wit.yeatesg.chess.main.Chess;
 import edu.wit.yeatesg.chess.objects.Board;
+import edu.wit.yeatesg.chess.objects.Player;
 import edu.wit.yeatesg.chess.objects.Tile;
 import edu.wit.yeatesg.chess.pathing.Path;
 import edu.wit.yeatesg.chess.pathing.PathList;
@@ -61,6 +62,11 @@ public abstract class Piece
 			icon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Black.png");
 		}
 	}
+	
+	public Player getPlayer()
+	{
+		return board.getPlayer(color);
+	}
 
 	/**
 	 * Attempts to move this piece to the given Tile. This method makes sure that the movement
@@ -110,16 +116,115 @@ public abstract class Piece
 		}
 
 		// CONDITION can't move there...
-		Chess.playSound("assets/Invalid_Move.wav");
 	}
 	
 	public boolean preMove(Tile t)
 	{	
 		setLastLocation(this.getLocation());
-		return true;
+		
+		ArrayList<Path> attackingPaths = getAttackingPathsForMove(t);
+		
+		boolean safeMove = attackingPaths == null;
+		
+		if (safeMove)
+		{
+			return true;
+		}
+		else
+		{
+			Chess.playSound("assets/Invalid_Move.wav");
+	//		board.getCurrentPlayer().deselect();
+			if (this instanceof King)
+			{
+				System.out.println("Ah");
+				t.setBlinkPiece(getPlayer().getKing());
+				t.blinkHighlight(Color.RED);
+			}
+			else
+			{
+				getPlayer().getKing().getTile().blinkHighlight(Color.RED);
+			}
+			
+			for (Path p : attackingPaths)
+			{
+				p.getCreator().getTile().blinkHighlight(Color.RED);
+				for (Tile pathTile : p.getTiles())
+				{
+					pathTile.blinkHighlight(Color.RED);
+				}
+			}
+
+			return false;
+		}		
 	}
 	
-	public void move(Tile t)
+	public boolean hasSafeMove()
+	{
+		for (Path p : getPaths())
+		{
+			for (Tile t : p.getTiles())
+			{
+				if (isMoveSafe(t))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public ArrayList<Path> getAttackingPathsForMove(Tile t)
+	{
+		ArrayList<Path> attacking = null;
+
+		if (!t.hasPiece() || (t.hasPiece() && t.getPiece().getColor().equals(getEnemyColor())))
+		{
+			Tile lastTile = board.tileAt(getLocation());
+			lastTile.setPiece(null);
+			
+			Piece removedPiece = t.getPiece();
+			if (removedPiece != null)
+			{
+				removedPiece.setTile(null);
+			}
+			
+			t.setPiece(this);
+			setTile(t);		
+				
+			
+			King king = getPlayer().getKing();
+			if (king.isUnderAttack())
+			{
+				attacking = board.getAttackingPaths(king.getLocation(), king.getEnemyColor());
+			}
+			
+			lastTile.setPiece(this);
+			setTile(lastTile);
+			t.setPiece(removedPiece);
+			if (removedPiece != null)
+			{
+				removedPiece.setTile(t);	
+			}	
+		}
+		
+		return attacking;
+	}
+	
+	/*
+	 * The king not being in check after a move constitutes a safe move
+	 */
+	
+	public boolean isMoveSafe(Tile t)
+	{
+		return getAttackingPathsForMove(t) == null;
+	}
+	
+	public ArrayList<Path> getUnsafePathsForMove(Tile t)
+	{
+		return null; 	
+	}
+	
+	public final void move(Tile t)
 	{
 		getTile().setPiece(null);
 		setTile(t);
@@ -134,7 +239,11 @@ public abstract class Piece
 		board.switchTurns();
 		Chess.playSound("assets/Pickup_Place.wav");
 	}
-
+	
+	public Color getEnemyColor()
+	{
+		return color == Color.WHITE ? Color.BLACK : Color.WHITE;
+	}
 
 	/**
 	 * This method is implemented in all subclasses of {@link Piece}. These subclasses include
@@ -281,6 +390,7 @@ public abstract class Piece
 	 */
 	public boolean isUnderAttack()
 	{
+		System.out.println(this.getClass().getSimpleName());
 		return board.isUnderAttack(getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
 	}
 	

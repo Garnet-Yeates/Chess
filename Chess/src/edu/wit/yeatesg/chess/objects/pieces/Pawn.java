@@ -118,7 +118,7 @@ public class Pawn extends Piece
 		{
 			setJumpedTwiceOnFirstMove(true);
 		}
-		
+				
 		if (tile.getLocation().equals(getPassantLocation()))
 		{
 			getPassant().getTile().setPiece(null);
