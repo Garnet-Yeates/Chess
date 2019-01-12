@@ -92,11 +92,11 @@ public class Player
 		return king;
 	}
 	
-	public boolean hasSafeMove()
+	public boolean canMove()
 	{
 		for (Piece allyPiece : getPieces())
 		{
-			if (allyPiece.hasSafeMove())
+			if (allyPiece.hasAnySafeMove())
 			{
 				return true;
 			}
@@ -106,7 +106,7 @@ public class Player
 	
 	public boolean checkStalemate()
 	{
-		if (!king.inCheck() && !hasSafeMove())
+		if (!king.inCheck() && !canMove())
 		{
 			board.finishGame(null);
 			return true;

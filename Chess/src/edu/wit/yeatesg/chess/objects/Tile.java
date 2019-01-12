@@ -188,9 +188,7 @@ public class Tile
 		int gap = 5;
 		
 		double highlightWeight = 0.70;
-		
-		System.out.println(getLocation() + " " + getBlinkPiece());
-		
+				
 		if (!hasPiece() && !hasBlinkPiece()) highlightWeight = 0.35;
 		int r = (int) (highlightWeight * highlight.getRed()) + (int) ((1 - highlightWeight) * color.getRed());
 		int g = (int) (highlightWeight * highlight.getGreen()) + (int) ((1 - highlightWeight) * color.getGreen());

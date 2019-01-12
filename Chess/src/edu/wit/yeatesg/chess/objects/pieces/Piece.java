@@ -20,11 +20,11 @@ public abstract class Piece
 	protected Tile tile;
 	protected Color color;
 
-	protected int nextMoveNum = 1;
+	protected int nextMoveNum;
 
 	protected ImageIcon icon;
 	protected ImageIcon outlineIcon;
-	
+
 	protected Point lastLocation;
 
 	/**
@@ -44,12 +44,10 @@ public abstract class Piece
 	 */
 	public Piece(Tile tile, Color color)
 	{
-		if (tile != null)
-		{
-			this.tile = tile;
-			this.color = color;
-			tile.setPiece(this);	
-		}
+		this.nextMoveNum = 1;
+		this.tile = tile;
+		this.color = color;
+		tile.setPiece(this);	
 
 		outlineIcon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Outline.png");
 
@@ -62,172 +60,23 @@ public abstract class Piece
 			icon = new ImageIcon("assets/" + getClass().getSimpleName() + "_Black.png");
 		}
 	}
-	
-	public Player getPlayer()
+
+	/**
+	 * Obtains the Tile that this piece exists on
+	 * @return the {@link Tile} object that this piece is bound to
+	 */
+	public Tile getTile()
 	{
-		return board.getPlayer(color);
+		return tile;
 	}
 
 	/**
-	 * Attempts to move this piece to the given Tile. This method makes sure that the movement
-	 * that this piece is attempting is a legal moves. Legal moves are defined as movements to {@link Tile}'s
-	 * that exist in this piece's path list (obtained via {@link Piece#getPaths()}). It also sets certain fields
-	 * during/after movement, depending on what piece is moving (for example, when a Pawn moves, it
-	 * calls {@link Pawn#postMove()} after the movement occurs, which is a special method used only for Pawns)
-	 * @param t the {@link Tile} to attempt to move to
-	 * @return false if the movement failed
+	 * Changes the Tile that this piece exists on
+	 * @param t The new {@link Tile} for this piece
 	 */
-	public void attemptMove(Tile t)
+	public void setTile(Tile t)
 	{
-		PathList paths = getPaths();
-		for (Path p : paths)
-		{
-			if (p.contains(t))
-			{
-				if (p.killsEnemy())
-				{	
-					if (t.equals(p.getKilledPiece().getTile()) || p.hasSpecialKillSpot() && t.getLocation().equals(p.getSpecialKillSpot()))
-					{	
-						p.getKilledPiece().getTile().setPiece(null);
-						p.getKilledPiece().setTile(null);
-					}
-				}
-				
-				if (preMove(t))
-				{
-					move(t);
-					postMove(); // Actual movement just happened
-					return;
-				}
-			}
-		}
-
-		// CONDITION can't move there...
-	}
-	
-	public boolean preMove(Tile t)
-	{	
-		setLastLocation(this.getLocation());
-		
-		ArrayList<Path> attackingPaths = getAttackingPathsForMove(t);
-		
-		boolean safeMove = attackingPaths == null;
-		
-		if (safeMove)
-		{
-			return true;
-		}
-		else
-		{
-			Chess.playSound("assets/Invalid_Move.wav");
-	//		board.getCurrentPlayer().deselect();
-			if (this instanceof King)
-			{
-				t.setBlinkPiece(getPlayer().getKing());
-				t.blinkHighlight(Color.RED);
-			}
-			else
-			{
-				getPlayer().getKing().getTile().blinkHighlight(Color.RED);
-			}
-			
-			for (Path p : attackingPaths)
-			{
-				p.getCreator().getTile().blinkHighlight(Color.RED);
-				for (Tile pathTile : p.getTiles())
-				{
-					pathTile.blinkHighlight(Color.RED);
-				}
-			}
-
-			return false;
-		}		
-	}
-	
-	public boolean hasSafeMove()
-	{
-		for (Path p : getPaths())
-		{
-			for (Tile t : p.getTiles())
-			{
-				if (isMoveSafe(t))
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public ArrayList<Path> getAttackingPathsForMove(Tile t)
-	{
-		ArrayList<Path> attacking = null;
-
-		if (!t.hasPiece() || (t.hasPiece() && t.getPiece().getColor().equals(getEnemyColor())))
-		{
-			Tile lastTile = board.tileAt(getLocation());
-			lastTile.setPiece(null);
-			
-			Piece removedPiece = t.getPiece();
-			if (removedPiece != null)
-			{
-				removedPiece.setTile(null);
-			}
-			
-			t.setPiece(this);
-			setTile(t);		
-				
-			King king = getPlayer().getKing();
-			if (king.isUnderAttack())
-			{
-				attacking = board.getAttackingPaths(king.getLocation(), king.getEnemyColor());
-			}
-			
-			lastTile.setPiece(this);
-			setTile(lastTile);
-			t.setPiece(removedPiece);
-			if (removedPiece != null)
-			{
-				removedPiece.setTile(t);	
-			}	
-		}
-		
-		return attacking;
-	}
-	
-	/*
-	 * The king not being in check after a move constitutes a safe move
-	 */
-	
-	public boolean isMoveSafe(Tile t)
-	{
-		return getAttackingPathsForMove(t) == null;
-	}
-	
-	public ArrayList<Path> getUnsafePathsForMove(Tile t)
-	{
-		return null; 	
-	}
-	
-	public final void move(Tile t)
-	{
-		getTile().setPiece(null);
-		setTile(t);
-		nextMoveNum++;
-		t.setPiece(this);
-	}
-	
-	public void postMove()
-	{
-		board.getCurrentPlayer().deselect();
-		board.repaint();
-		board.switchTurns();
-		Chess.playSound("assets/Pickup_Place.wav");
-	}
-	
-	public Color getEnemyColor()
-	{
-		return color == Color.WHITE ? Color.BLACK : Color.WHITE;
+		tile = t;
 	}
 
 	/**
@@ -261,21 +110,229 @@ public abstract class Piece
 	}
 
 	/**
-	 * Obtains the Tile that this piece exists on
-	 * @return the {@link Tile} object that this piece is bound to
+	 * Obtains the color of this piece
+	 * @return a {@link Color} object representing this piece's color
 	 */
-	public Tile getTile()
+	public Color getColor()
 	{
-		return tile;
+		return new Color(color.getRed(), color.getGreen(), color.getBlue());
+	}	
+
+	/**
+	 * Obtains the color of the opponent's pieces
+	 * @return a {@link Color} object representing the opponent's color
+	 */
+	public Color getEnemyColor()
+	{
+		return color == Color.WHITE ? Color.BLACK : Color.WHITE;
 	}
 
 	/**
-	 * Changes the Tile that this piece exists on
-	 * @param t The new {@link Tile} for this piece
+	 * Returns the Player who owns this Piece
+	 * @return the {@link Player} who owns this Piece
 	 */
-	public void setTile(Tile t)
+	public Player getOwner()
 	{
-		tile = t;
+		return board.getPlayer(color);
+	}
+
+	/**
+	 * Checks to see if this piece is under attack (able to be attacked by enemies)
+	 * @return true if this piece is under attack
+	 */
+	public boolean isUnderAttack()
+	{
+		return board.isUnderAttack(getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
+	}
+
+	/**
+	 * Attempts to move this piece to the given Tile. This method makes sure that the movement
+	 * that this piece is attempting is a legal moves. Legal moves are defined as movements to {@link Tile}'s
+	 * that exist in this piece's path list (obtained via {@link Piece#getPaths()}). It also sets certain fields
+	 * during/after movement, depending on what piece is moving (for example, when a Pawn moves, it
+	 * calls {@link Pawn#postMove()} after the movement occurs, which is a special method used only for Pawns)
+	 * @param t the {@link Tile} to attempt to move to
+	 * @return false if the movement failed
+	 */
+	public void attemptMove(Tile t)
+	{
+		PathList paths = getPaths();
+		for (Path p : paths)
+		{
+			if (p.contains(t))
+			{
+				if (p.killsEnemy())
+				{	
+					if (t.equals(p.getKilledPiece().getTile()) || p.hasSpecialKillSpot() && t.getLocation().equals(p.getSpecialKillSpot()))
+					{	
+						p.getKilledPiece().getTile().setPiece(null);
+						p.getKilledPiece().setTile(null);
+					}
+				}
+
+				if (preMove(t))
+				{
+					move(t);
+					postMove(); // Actual movement just happened
+					return;
+				}
+			}
+		}
+
+		// CONDITION can't move there...
+	}
+
+	/**
+	 * Checks this {@link Piece}'s movement to the given {@link Tile}. If the ally king will be in
+	 * be in checkmate as a result of this movement, an ArrayList of enemy {@link Path}'s that
+	 * are capable of killing the {@link King} after the movement will be returned. Note that the
+	 * movement never actually happens, this is merely to check if the king would die had the movement
+	 * occured.
+	 * @param t The tile that this "movement" is going to
+	 * @return null if this is a safe movement
+	 */
+	public ArrayList<Path> getAttackingPathsForMove(Tile t)
+	{
+		ArrayList<Path> attacking = null;
+
+		if (!t.hasPiece() || (t.hasPiece() && t.getPiece().getColor().equals(getEnemyColor())))
+		{
+			Tile lastTile = board.tileAt(getLocation());
+			lastTile.setPiece(null);
+
+			Piece removedPiece = t.getPiece();
+			if (removedPiece != null)
+			{
+				removedPiece.setTile(null);
+			}
+
+			t.setPiece(this);
+			setTile(t);		
+
+			King king = getOwner().getKing();
+			if (king.isUnderAttack())
+			{
+				attacking = board.getAttackingPaths(king.getLocation(), king.getEnemyColor());
+			}
+
+			lastTile.setPiece(this);
+			setTile(lastTile);
+			t.setPiece(removedPiece);
+			if (removedPiece != null)
+			{
+				removedPiece.setTile(t);	
+			}	
+		}
+
+		return attacking;
+	}
+
+	/**
+	 * Checks if the movement of this piece to the given tile will cause this piece's King to be
+	 * in check.
+	 * @param t the tile involved with the movement that is being checked
+	 * @return true if this movement will not cause this piece's {@link King} to be in check
+	 * @see Piece#getAttackingPathsForMove(Tile)
+	 */
+	public boolean isMoveSafe(Tile t)
+	{
+		return getAttackingPathsForMove(t) == null;
+	}
+
+	/**
+	 * Determines whether this piece is able to move at all (a piece can't move if it's movement will
+	 * put the King into checkmate). Return true if any of this piece's movements will not cause the king
+	 * to be in check
+	 * @return true if there is a safe move
+	 */
+	public boolean hasAnySafeMove()
+	{
+		for (Path p : getPaths())
+		{
+			for (Tile t : p.getTiles())
+			{
+				if (isMoveSafe(t)) 
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * This method is called directly before {@link #move(Tile)}. It is used for doing last second
+	 * checks before a piece moves that aren't otherwise handeled through paths and {@link #attemptMove(Tile)}
+	 * (i.e determining whether or not the move will cause the king to be in check, and canceling movement if
+	 * this is the case). This method also does things such as setting the {@link #lastLocation} field for pieces
+	 * before they move. 
+	 * <b><br> Important: If you override this method, ALWAYS call super.preMove(t) in the override method</b>
+	 * @param 
+	 * @return
+	 */
+	public boolean preMove(Tile t)
+	{	
+		setLastLocation(this.getLocation());
+
+		ArrayList<Path> attackingPaths = getAttackingPathsForMove(t);
+
+		boolean safeMove = attackingPaths == null;
+
+		if (safeMove)
+		{
+			return true;
+		}
+		else
+		{
+			Chess.playSound("assets/Invalid_Move.wav");
+			board.getCurrentPlayer().deselect();
+			if (this instanceof King)
+			{
+				t.setBlinkPiece(getOwner().getKing());
+				t.blinkHighlight(Color.RED);
+			}
+			else
+			{
+				getOwner().getKing().getTile().blinkHighlight(Color.RED);
+			}
+
+			for (Path p : attackingPaths)
+			{
+				p.getCreator().getTile().blinkHighlight(Color.RED);
+				for (Tile pathTile : p.getTiles())
+				{
+					pathTile.blinkHighlight(Color.RED);
+				}
+			}
+
+			return false;
+		}		
+	}
+
+	/**
+	 * Moves this Piece to the given Tile
+	 * @param t the {@link Tile} to move to
+	 */
+	public final void move(Tile t)
+	{
+		getTile().setPiece(null);
+		setTile(t);
+		nextMoveNum++;
+		t.setPiece(this);
+	}
+
+	/**
+	 * Called directly after {@link #move(Tile)}, this method is mainly used for switching turns,
+	 * repainting and deselecting. However, this method is overriden in some sub classes, such as
+	 * {@link Pawn}, to have extra functionality (such as the en passant rule)
+	 * <b><br> Important: If you override this method, ALWAYS call super.postMove(t) in the override method</b>
+	 */
+	public void postMove()
+	{
+		board.getCurrentPlayer().deselect();
+		board.repaint();
+		board.switchTurns();
+		Chess.playSound("assets/Pickup_Place.wav");
 	}
 
 	/**
@@ -289,13 +346,33 @@ public abstract class Piece
 	}
 
 	/**
-	 * Obtains the color of this piece
-	 * @return a {@link Color} object representing this piece's color
+	 * Gets the Location that this piece existed at before it moved to its current tile
+	 * @return a {@link Point} representing this Piece's last location
 	 */
-	public Color getColor()
+	public Point getLastLocation()
 	{
-		return new Color(color.getRed(), color.getGreen(), color.getBlue());
-	}	
+		return lastLocation;
+	}
+
+	/**
+	 * Sets this Piece's last location to the given location
+	 * @param loc the new {@link Point}s that this piece used to exist at
+	 */
+	public void setLastLocation(Point loc)
+	{
+		lastLocation = loc;
+	}
+
+	/**
+	 * Determines whether or not this piece has moved. It does this by checking
+	 * if the {@link Piece#nextMoveNum} field is greater than one and returns true
+	 * if that is the case
+	 * @return true if this piece has moved
+	 */
+	public boolean hasMoved()
+	{
+		return nextMoveNum > 1;
+	}
 
 	/**
 	 * Determines whether or not this Piece is to the left of another piece
@@ -348,37 +425,6 @@ public abstract class Piece
 	}
 
 	/**
-	 * Determines whether or not this piece has moved. It does this by checking
-	 * if the {@link Piece#nextMoveNum} field is greater than one and returns true
-	 * if that is the case
-	 * @return true if this piece has moved
-	 */
-	public boolean hasMoved()
-	{
-		return nextMoveNum > 1;
-	}
-	
-	public Point getLastLocation()
-	{
-		return lastLocation;
-	}
-	
-	public void setLastLocation(Point loc)
-	{
-		lastLocation = loc;
-	}
-	
-	
-	/**
-	 * Checks to see if this piece is under attack (able to be attacked by enemies)
-	 * @return true if this piece is under attack
-	 */
-	public boolean isUnderAttack()
-	{
-		return board.isUnderAttack(getLocation(), getColor().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
-	}
-	
-	/**
 	 * Obtains a list of all of the pieces on the board that are on the same team
 	 * as this piece
 	 * @return an {@link ArrayList} of the ally pieces
@@ -401,7 +447,7 @@ public abstract class Piece
 		list.remove(this);
 		return list;
 	}
-	
+
 	/**
 	 * Obtains a list of all of the pieces on the board that aren't on the same team
 	 * as this piece
