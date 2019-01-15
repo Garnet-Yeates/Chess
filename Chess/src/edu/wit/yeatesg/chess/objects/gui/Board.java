@@ -1,4 +1,4 @@
-package edu.wit.yeatesg.chess.objects;
+package edu.wit.yeatesg.chess.objects.gui;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -16,10 +16,12 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import edu.wit.yeatesg.chess.main.Chess;
+import edu.wit.yeatesg.chess.objects.Player;
+import edu.wit.yeatesg.chess.objects.Tile;
 import edu.wit.yeatesg.chess.objects.pieces.Bishop;
 import edu.wit.yeatesg.chess.objects.pieces.King;
 import edu.wit.yeatesg.chess.objects.pieces.Knight;
@@ -27,6 +29,8 @@ import edu.wit.yeatesg.chess.objects.pieces.Pawn;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.objects.pieces.Queen;
 import edu.wit.yeatesg.chess.objects.pieces.Rook;
+import edu.wit.yeatesg.chess.objects.timers.BlitzTimer;
+import edu.wit.yeatesg.chess.objects.timers.TurnTimer;
 import edu.wit.yeatesg.chess.pathing.Path;
 import edu.wit.yeatesg.chess.pathing.PathList;
 import edu.wit.yeatesg.chess.pathing.Point;
@@ -47,8 +51,21 @@ public class Board extends JPanel
 
 	private Player currentPlayer = p1;
 	
-	public Board(JFrame container)
+	private JLabel turnLabel;
+	private TurnTimer turnTimer;
+	
+	public Console console;
+	
+	public Board(JFrame container, JLabel p1Label, JLabel p2Label, JLabel turnLabel, Console console)
 	{
+		this.turnLabel = turnLabel;
+		this.console = console;
+		turnLabel.setText(currentPlayer.equals(p1) ? "<-- P1 Turn --<" : ">-- P2 Turn -->");
+		p1.setTimerLabel(p1Label);
+		p2.setTimerLabel(p2Label);
+		this.setFocusable(false);
+		this.container = container;
+		this.container.setResizable(false);
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new java.awt.Point(0, 0), "blank cursor");
 		setCursor(blankCursor);
@@ -61,8 +78,11 @@ public class Board extends JPanel
 		initTiles();
 		initPieces();
 
+		turnTimer = new BlitzTimer(this, 120, p1, p2);
+		
+		turnTimer.start();
 		timer.start();
-
+		
 		BoardMouseListener mouseListener = new BoardMouseListener();
 		addMouseMotionListener(mouseListener);
 		addMouseListener(mouseListener);		
@@ -168,7 +188,13 @@ public class Board extends JPanel
 					Point p = new Point(y, x);
 					Tile t = tileAt(p);
 					
-					g.setColor(t.hasBlinkColor() ? t.getBlinkColor() : t.getColor());
+					Color tileColor = t.hasBlinkColor() ? t.getBlinkColor() : t.getColor();
+					if (frozen)
+					{
+						tileColor = tileColor.darker();
+					}
+					
+					g.setColor(tileColor);
 					g.fillRect(xPos, yPos, tileSize, tileSize);
 					
 					if (t.hasBlinkColor() && t.hasBlinkPiece())
@@ -414,6 +440,7 @@ public class Board extends JPanel
 	 */
 	public void switchTurns()
 	{
+		console.log("");
 		examineCheckmate();
 
 		if (p1.equals(currentPlayer))
@@ -425,8 +452,11 @@ public class Board extends JPanel
 			currentPlayer = p1;
 		}
 		
-		examineStalemate();
+		examineStalemate();	
 		
+		turnLabel.setText(currentPlayer.equals(p1) ? "<-- P1 Turn --|" : "|-- P2 Turn -->");
+		turnTimer.onTurnSwitch();
+
 	}
 	
 	boolean frozen = false;
@@ -498,6 +528,26 @@ public class Board extends JPanel
 		@Override
 		public void mouseClicked(MouseEvent e)
 		{
+			
+		}
+		
+		@Override
+		public void mouseMoved(MouseEvent e)
+		{
+			mouseX = e.getX();
+			mouseY = e.getY();
+		}
+		
+		// Unused Implemented Methods
+
+		public void mouseEntered(MouseEvent e) {
+
+		}
+		
+		public void mouseExited(MouseEvent arg0) { }
+		
+		public void mousePressed(MouseEvent e)
+		{
 			if (!frozen && !Tile.areTilesBlinking())
 			{
 				int x = (e.getX() - xOffset / 2) / (tileSize);
@@ -546,20 +596,12 @@ public class Board extends JPanel
 			}
 		}
 		
-		@Override
-		public void mouseMoved(MouseEvent e)
+		public void mouseReleased(MouseEvent arg0) {}
+		public void mouseDragged(MouseEvent e)
 		{
 			mouseX = e.getX();
 			mouseY = e.getY();
 		}
-		
-		// Unused Implemented Methods
-
-		public void mouseEntered(MouseEvent arg0) {}
-		public void mouseExited(MouseEvent arg0) {}
-		public void mousePressed(MouseEvent arg0) {}
-		public void mouseReleased(MouseEvent arg0) {}
-		public void mouseDragged(MouseEvent arg0) {}
 	}
 	
 	public void finishGame(Color winner)
@@ -568,86 +610,25 @@ public class Board extends JPanel
 		
 		if (winner != null)
 		{
-			System.out.println((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
+			console.log((winner.equals(Color.WHITE) ? "BLACK" : "WHITE") + " Team Lost!");
 		}
 		else
 		{
-			System.out.println("Stalemate");
+			console.log("Stalemate");
 		}
 		
 	}
 	
-	private Timer blitzTimer = new Timer(1000, new BlitzTimer());
-	
-	{
-		blitzTimer.start();
-	}
-	
-	private int p1BlitzTimer = 90;
-	private int p2BlitzTimer = 90;
-	
-	public String secondsToString(int seconds)
+	public static String secondsToString(int seconds)
 	{
 		int mins = seconds / 60;
 		int remSecs = seconds % 60;
 		return mins + ":" + (remSecs < 10 ? "0" : "") + (remSecs);
 	}
 	
-	public String getP1BlitzClockString()
-	{
-		return secondsToString(p1BlitzTimer);
-	}
-	
-	public String getP2BlitzClockString()
-	{
-		return secondsToString(p2BlitzTimer);
-	}
-	
 	public String getCurrentPlayerString()
 	{
 		return (currentPlayer == p1) ? "<- Player 1's Turn" : "Player 2's Turn ->";
-	}
-	
-	public void timeout(Player p)
-	{
-		freeze();
-		blitzTimer.stop();
-		System.out.println((p.getColor().equals(Color.WHITE) ? "WHITE" : "BLACK") + " TEAM LOSES AS A RESULT OF BEING FUCKING SLOW");
-	}
-	
-	public class BlitzTimer implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			/*
-		 	if (p1BlitzTimer < 1 || p2BlitzTimer < 1)
-			{
-				timeout(p1BlitzTimer < 1 ? p1 : p2);
-			}
-			
-			if (!frozen)
-			{
-				if (currentPlayer == p1)
-				{
-					p1BlitzTimer--;
-					p2BlitzTimer++;
-				}
-				else
-				{
-					p1BlitzTimer++;
-					p2BlitzTimer--;
-				}
-				
-				if (container instanceof AlternatativeFrame)
-				{
-					((AlternatativeFrame) container).updateClocks();
-				}
-			}
-		
-			 */
-			
-		}
 	}
 
 	public void onKeyPress(KeyEvent e)
@@ -659,7 +640,6 @@ public class Board extends JPanel
 				currentPlayer.getSelectedPiece().getTile().setPiece(null);
 				currentPlayer.getSelectedPiece().setTile(null);
 				currentPlayer.deselect();
-
 			}
 		}
 	}

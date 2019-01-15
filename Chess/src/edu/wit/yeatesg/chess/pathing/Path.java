@@ -1,8 +1,8 @@
 package edu.wit.yeatesg.chess.pathing;
 import java.util.ArrayList;
 
-import edu.wit.yeatesg.chess.objects.Board;
 import edu.wit.yeatesg.chess.objects.Tile;
+import edu.wit.yeatesg.chess.objects.gui.Board;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 
 public class Path

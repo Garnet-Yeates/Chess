@@ -1,4 +1,4 @@
-package edu.wit.yeatesg.chess.objects;
+package edu.wit.yeatesg.chess.objects.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,7 +9,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import edu.wit.yeatesg.chess.main.Chess;
+import edu.wit.yeatesg.chess.objects.Tile;
 import edu.wit.yeatesg.chess.objects.pieces.Bishop;
 import edu.wit.yeatesg.chess.objects.pieces.Knight;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;

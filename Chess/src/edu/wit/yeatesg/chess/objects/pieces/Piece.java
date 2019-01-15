@@ -5,10 +5,10 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 
-import edu.wit.yeatesg.chess.main.Chess;
-import edu.wit.yeatesg.chess.objects.Board;
 import edu.wit.yeatesg.chess.objects.Player;
 import edu.wit.yeatesg.chess.objects.Tile;
+import edu.wit.yeatesg.chess.objects.gui.Board;
+import edu.wit.yeatesg.chess.objects.gui.Chess;
 import edu.wit.yeatesg.chess.pathing.Path;
 import edu.wit.yeatesg.chess.pathing.PathList;
 import edu.wit.yeatesg.chess.pathing.Point;
@@ -157,6 +157,7 @@ public abstract class Piece
 	public void attemptMove(Tile t)
 	{
 		PathList paths = getPaths();
+		boolean kills = false;
 		for (Path p : paths)
 		{
 			if (p.contains(t))
@@ -165,13 +166,17 @@ public abstract class Piece
 				{	
 					if (t.equals(p.getKilledPiece().getTile()) || p.hasSpecialKillSpot() && t.getLocation().equals(p.getSpecialKillSpot()))
 					{	
-						p.getKilledPiece().getTile().setPiece(null);
-						p.getKilledPiece().setTile(null);
+						kills = true;
 					}
 				}
 
 				if (preMove(t))
 				{
+					if (kills)
+					{
+						p.getKilledPiece().getTile().setPiece(null);
+						p.getKilledPiece().setTile(null);
+					}
 					move(t);
 					postMove(); // Actual movement just happened
 					return;
@@ -285,6 +290,7 @@ public abstract class Piece
 		else
 		{
 			Chess.playSound("assets/Invalid_Move.wav");
+			board.console.log("Invalid Move (you cannot put yourself into checkmate)");
 			board.getCurrentPlayer().deselect();
 			if (this instanceof King)
 			{
@@ -299,10 +305,6 @@ public abstract class Piece
 			for (Path p : attackingPaths)
 			{
 				p.getCreator().getTile().blinkHighlight(Color.RED);
-				for (Tile pathTile : p.getTiles())
-				{
-					pathTile.blinkHighlight(Color.RED);
-				}
 			}
 
 			return false;

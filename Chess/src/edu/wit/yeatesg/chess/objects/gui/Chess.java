@@ -1,11 +1,15 @@
-package edu.wit.yeatesg.chess.objects;
+package edu.wit.yeatesg.chess.objects.gui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JFrame;
@@ -16,17 +20,18 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-public class AlternatativeFrame extends JFrame
+public class Chess extends JFrame
 {
 	private static final long serialVersionUID = 2354095733328681014L;
 	private JPanel contentPane;
-	private Board board = new Board(this);
 
 	JLabel p1TimerLabel = new JLabel(" --- ");
 	JLabel p2TimerLabel = new JLabel(" --- ");
 	JLabel whoseTurnLabel = new JLabel("");
-	private final JLabel lblNewLabel = new JLabel("New label");
 	
+	private final Console console = new Console("");
+	
+	private Board board = new Board(this, p1TimerLabel, p2TimerLabel, whoseTurnLabel, console);
 	
 	/**
 	 * Launch the application.
@@ -39,7 +44,7 @@ public class AlternatativeFrame extends JFrame
 			{
 				try
 				{
-					AlternatativeFrame frame = new AlternatativeFrame();
+					Chess frame = new Chess();
 					frame.setVisible(true);
 				} 
 				catch (Exception e)
@@ -53,13 +58,15 @@ public class AlternatativeFrame extends JFrame
 	/**
 	 * Create the frame.
 	 */
-	public AlternatativeFrame()
+	public Chess()
 	{
 		addKeyListener(this.new BoardKeyListener());
-		lblNewLabel.setForeground(Color.WHITE);
-		lblNewLabel.setBorder(new LineBorder(Color.WHITE, 3, true));
+		console.setHorizontalAlignment(SwingConstants.CENTER);
+		console.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		console.setForeground(Color.WHITE);
+		console.setBorder(new LineBorder(Color.WHITE, 3, true));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 794, 932);
+		setBounds(100, 100, 785, 932);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -90,7 +97,7 @@ public class AlternatativeFrame extends JFrame
 			gl_contentPane.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING, false)
-						.addComponent(lblNewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(console, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(board, GroupLayout.DEFAULT_SIZE, 768, Short.MAX_VALUE)
 						.addGroup(Alignment.LEADING, gl_contentPane.createSequentialGroup()
 							.addComponent(p1TimerLabel, GroupLayout.PREFERRED_SIZE, 161, GroupLayout.PREFERRED_SIZE)
@@ -110,7 +117,7 @@ public class AlternatativeFrame extends JFrame
 						.addComponent(p2TimerLabel, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
 						.addComponent(whoseTurnLabel, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(lblNewLabel, GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
+					.addComponent(console, GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
 		);
 		contentPane.setLayout(gl_contentPane);
 		
@@ -120,11 +127,23 @@ public class AlternatativeFrame extends JFrame
 		repaint();
 	}
 	
-	public void updateClocks()
+	/**
+	 * Plays the sound file at the given path, if there is any
+	 * @param path the location of the file
+	 */
+	public static void playSound(String path)
 	{
-		p1TimerLabel.setText(board.getP1BlitzClockString());
-		p2TimerLabel.setText(board.getP2BlitzClockString());
-		whoseTurnLabel.setText(board.getCurrentPlayerString());
+		try
+		{
+			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(path).toURI().toURL());
+			Clip clip = AudioSystem.getClip();
+			clip.open(audioInputStream);
+			clip.start();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 	public class BoardKeyListener implements KeyListener
@@ -136,18 +155,9 @@ public class AlternatativeFrame extends JFrame
 		}
 
 		@Override
-		public void keyReleased(KeyEvent arg0)
-		{
-			// TODO Auto-generated method stub
-
-		}
+		public void keyReleased(KeyEvent arg0) { }
 
 		@Override
-		public void keyTyped(KeyEvent arg0)
-		{
-
-
-		}
-
+		public void keyTyped(KeyEvent arg0) { }
 	}
 }

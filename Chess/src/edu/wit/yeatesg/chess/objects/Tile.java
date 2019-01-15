@@ -2,6 +2,7 @@ package edu.wit.yeatesg.chess.objects;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import edu.wit.yeatesg.chess.objects.gui.Board;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
 import edu.wit.yeatesg.chess.pathing.Point;
 
@@ -189,7 +190,7 @@ public class Tile
 		
 		double highlightWeight = 0.70;
 				
-		if (!hasPiece() && !hasBlinkPiece()) highlightWeight = 0.35;
+		if (!hasPiece() && !hasBlinkPiece()) highlightWeight = 0.3;
 		int r = (int) (highlightWeight * highlight.getRed()) + (int) ((1 - highlightWeight) * color.getRed());
 		int g = (int) (highlightWeight * highlight.getGreen()) + (int) ((1 - highlightWeight) * color.getGreen());
 		int b = (int) (highlightWeight * highlight.getBlue()) + (int) ((1 - highlightWeight) * color.getBlue());

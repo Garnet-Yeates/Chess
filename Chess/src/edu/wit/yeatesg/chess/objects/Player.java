@@ -3,10 +3,11 @@ package edu.wit.yeatesg.chess.objects;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import javax.swing.JLabel;
+
+import edu.wit.yeatesg.chess.objects.gui.Board;
 import edu.wit.yeatesg.chess.objects.pieces.King;
 import edu.wit.yeatesg.chess.objects.pieces.Piece;
-import edu.wit.yeatesg.chess.pathing.Path;
-import edu.wit.yeatesg.chess.pathing.PathList;
 import edu.wit.yeatesg.chess.pathing.Point;
 
 public class Player
@@ -16,6 +17,9 @@ public class Player
 	private King king;
 	private Board board;
 	
+	private JLabel timerLabel;
+	private int remainingSeconds;
+	
 	/**
 	 * Constructs a new Player object
 	 * @param team The color of this Player's pieces
@@ -24,6 +28,32 @@ public class Player
 	{
 		board = b;
 		color = team;
+	}
+	
+	public JLabel getTimerLabel()
+	{
+		return timerLabel;
+	}
+	
+	public void setTimerLabel(JLabel label)
+	{
+		timerLabel = label;
+	}
+	
+	public void setRemainingSeconds(int ms)
+	{
+		remainingSeconds = ms;
+	}
+	
+	public int getRemainingSeconds()
+	{
+		return remainingSeconds;
+	}
+	
+	public void modifyRemainingSeconds(int num)
+	{
+		timerLabel.setText(Board.secondsToString(remainingSeconds));
+		remainingSeconds += num;
 	}
 	
 	/**
@@ -134,108 +164,8 @@ public class Player
 	@SuppressWarnings("unchecked")
 	public void checkCheckmate()
 	{
-		if (king.inCheck())
-		{
-			boolean checkMate = false;
-			
-			PathList kingPaths = king.getPaths();
-			
-			ArrayList<Piece> piecesThatCanKillKing = new ArrayList<>();
-			
-			for (Piece enemyPiece : king.getEnemyPieces())
-			{
-				for (Path enemyPath : enemyPiece.getPaths())
-				{
-					if (enemyPath.intercepts(new Path(king.getTile(), king)))
-					{
-						piecesThatCanKillKing.add(enemyPiece);
-					}
-				}
-			}
-			
-			/* This block covers the possibility of the King's allies attacking pieces that are threatening the king.
-			 * However, this can only happen if it is this King's turn
-			 */
-			if (!board.getCurrentPlayer().getColor().equals(king.getColor()))
-			{
-				for (Piece enemyPiece : (ArrayList<Piece>) piecesThatCanKillKing.clone())
-				{
-					if (enemyPiece.isUnderAttack())
-					{
-						piecesThatCanKillKing.remove(enemyPiece);
-					}
-				}
-			}
-			
-			if (!piecesThatCanKillKing.isEmpty())
-			{
-				checkMate = true;
-			}
-			
-			/* Possibility of King moving himself out of check handeled below (again, it has to be the king's team's turn
-			 * in order for this to be a possibility. Also, the possibility of an ally blocking an enemy's path to the king
-			 * is handeled below as well
-			 */
-			if (checkMate == true && !board.getCurrentPlayer().getColor().equals(king.getColor()))
-			{									
-				for (Path kingPath : (ArrayList<Path>) king.getPaths().clone())
-				{
-					for (Piece enemy : king.getEnemyPieces())
-					{
-						for (Path enemyPath : enemy.getPaths())
-						{
-							if (!kingPath.intercepts(enemyPath))
-							{
-								checkMate = false;
-							}
-						}
-					}
-				}
-				
-				if (checkMate)
-				{
-					ArrayList<Path> vulnerableKingPaths = new ArrayList<>();			
-					
-					for (Piece enemyPiece : king.getEnemyPieces())
-					{
-						for (Path enemyPath : enemyPiece.getPaths())
-						{
-							for (Path kingPath : kingPaths)
-							{
-								if (enemyPath.intercepts(kingPath))
-								{
-									vulnerableKingPaths.add(enemyPath);
-								}
-							}
-						}
-					}
-					
-					for (Path vulnerablePath : (ArrayList<Path>) vulnerableKingPaths.clone())
-					{
-						for (Piece allyPiece : king.getAllyPieces())
-						{
-							for (Path allyPath : allyPiece.getPaths())
-							{
-								if (allyPath.intercepts(vulnerablePath))
-								{
-									vulnerableKingPaths.remove(vulnerablePath);
-								}
-							}
-						}
-					}
-					
-					if (vulnerableKingPaths.isEmpty()) 
-					{
-						checkMate = false;
-					}	
-				}
-			}
-			
-			if (checkMate)
-			{
-				String team = color.equals(Color.WHITE) ? "WHITE" : "BLACK";
-				System.out.println("CHECKMATE FOR " + team + " KING");
-			}
-		}
+		king.examineCheckmate();
 	}
+	
+	
 }
